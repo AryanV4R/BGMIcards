@@ -1,373 +1,235 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
+import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 
-const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co"; // e.g. https://xyzabcdef.supabase.co
+const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkYnp6YnJ1c21qeXFmbG90YmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTE3OTIsImV4cCI6MjA5NDIyNzc5Mn0.P7ycuWMpez18pB0amWVZfrRqDuFaqp8V3ZkO_V-3i4s";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 const CATEGORIES = [
-  "Evolving Universe",
-  "Jujutsu Kaisen",
-  "8th Anniversary",
-  "2025 PMGC",
-  "Playful Battleground",
-  "Glacier Series",
+  "Hero's Crown", "BLUE LOCK", "Soccer Celebration", "Playful Battleground 2.0", "Evolving Universe", "Jujutsu Kaisen", "Special", "Playful Battleground",
 ];
-
+const NEW_CATEGORIES = ["Hero's Crown", "BLUE LOCK", "Soccer Celebration", "Playful Battleground 2.0"];
 const CARDS = {
-  "Evolving Universe": ["EU-M416","EU-AKM","EU-AWM","EU-Kar98","EU-UMP","EU-M762","EU-DP28","EU-Groza","EU-MK14","EU-VSS"],
-  "Jujutsu Kaisen": ["JJK-M416","JJK-AKM","JJK-AWM","JJK-Kar98","JJK-UMP","JJK-M762","JJK-DP28","JJK-Groza","JJK-MK14","JJK-VSS"],
-  "8th Anniversary": ["8A-M416","8A-AKM","8A-AWM","8A-Kar98","8A-UMP","8A-M762","8A-DP28","8A-Groza","8A-MK14","8A-VSS"],
-  "2025 PMGC": ["PMGC-M416","PMGC-AKM","PMGC-AWM","PMGC-Kar98","PMGC-UMP","PMGC-M762","PMGC-DP28","PMGC-Groza","PMGC-MK14","PMGC-VSS"],
-  "Playful Battleground": ["PB-M416","PB-AKM","PB-AWM","PB-Kar98","PB-UMP","PB-M762","PB-DP28","PB-Groza","PB-MK14","PB-VSS"],
-  "Glacier Series": ["GL-M416","GL-AKM","GL-AWM","GL-Kar98","GL-UMP","GL-M762","GL-DP28","GL-Groza","GL-MK14","GL-VSS"],
+  "Hero's Crown": [
+    { name: "Achilles' Phantom", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Icarus Pickup", rarity: "Golden" },
+    { name: "Helion", rarity: "Blue" },
+    { name: "Laurel", rarity: "Blue" },
+    { name: "Training Ground", rarity: "Blue" },
+    { name: "Sun Chariot", rarity: "Blue" },
+    { name: "Golden Ball", rarity: "Blue" },
+    { name: "Sacred Fire", rarity: "Blue" },
+    { name: "Centaur Warrior", rarity: "Blue" },
+    { name: "Elite Heroic Spirit", rarity: "Blue" },
+    { name: "Wax Wings", rarity: "Grey" },
+    { name: "Heart of Fury", rarity: "Grey" },
+    { name: "Spartan Infantry", rarity: "Grey" },
+    { name: "Battle Flag", rarity: "Grey" },
+    { name: "Trial Point", rarity: "Grey" },
+    { name: "Pandora's Crate", rarity: "Grey" },
+    { name: "Floating Door", rarity: "Grey" },
+    { name: "Crown's Abode", rarity: "Grey" },
+    { name: "Prometheus' Trial", rarity: "Grey" },
+    { name: "Spartan's Trial", rarity: "Grey" },
+    { name: "Spartan Shieldbearer", rarity: "Grey" },
+  ],
+  "BLUE LOCK": [
+    { name: "BLUE LOCK", rarity: "Golden" },
+    { name: "Nagi Seishiro", rarity: "Golden" },
+    { name: "Isagi Yoichi", rarity: "Golden" },
+    { name: "Bachira Meguru", rarity: "Blue" },
+    { name: "Chigiri Hyoma Vehicle", rarity: "Blue" },
+    { name: "Itoshi Rin", rarity: "Blue" },
+    { name: "BLUE LOCK Backpack", rarity: "Grey" },
+    { name: "Prison Shackles", rarity: "Grey" },
+    { name: "Soccer Ball Ornament", rarity: "Grey" },
+  ],
+  "Soccer Celebration": [
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+  ],
+  "Playful Battleground 2.0": [
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Ford Mustang GTD", rarity: "Golden" },
+    { name: "Ford F-150 Raptor", rarity: "Golden" },
+    { name: "Harley-Davidson", rarity: "Golden" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Roadster", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Coming Soon", rarity: "Grey" },
+  ],
+  "Evolving Universe": [
+    { name: "Evacuation Master", rarity: "Golden" },
+    { name: "Melody Strongest Team", rarity: "Golden" },
+    { name: "Raging Rush Strongest Team", rarity: "Golden" },
+    { name: "Music Hall", rarity: "Blue" },
+    { name: "Racing Hall", rarity: "Blue" },
+    { name: "Dynamic Slide Rail", rarity: "Blue" },
+    { name: "Parachute Challenge", rarity: "Blue" },
+    { name: "Racing Challenge", rarity: "Blue" },
+    { name: "S-Rank Vault", rarity: "Blue" },
+    { name: "A-Rank Vault", rarity: "Grey" },
+    { name: "B-Rank Vault", rarity: "Grey" },
+    { name: "Special Lucky Spin", rarity: "Grey" },
+    { name: "Energy Shield", rarity: "Grey" },
+    { name: "Spatial Distortion Zone 1", rarity: "Grey" },
+    { name: "Spatial Distortion Zone 2", rarity: "Grey" },
+    { name: "Floating Thruster", rarity: "Grey" },
+  ],
+  "Jujutsu Kaisen": [
+    { name: "Jujutsu Kaisen", rarity: "Golden" },
+    { name: "Ryomen Sukuna", rarity: "Golden" },
+    { name: "Suguru Geto", rarity: "Golden" },
+    { name: "Satoru Gojo", rarity: "Blue" },
+    { name: "Yuji Itadori", rarity: "Blue" },
+    { name: "Megumi Fushiguro", rarity: "Blue" },
+    { name: "Nue", rarity: "Blue" },
+    { name: "Nobara Kugisaki", rarity: "Blue" },
+    { name: "Cathy", rarity: "Grey" },
+    { name: "Cursed Corpse Bear", rarity: "Grey" },
+    { name: "Inverted Spear of Heaven", rarity: "Grey" },
+  ],
+  "Special": [
+    { name: "Golden Age", rarity: "Blue" },
+    { name: "Arcade Time", rarity: "Blue" },
+    { name: "Rhythm Hero", rarity: "Blue" },
+    { name: "Vibrant World", rarity: "Blue" },
+    { name: "Dinoground", rarity: "Blue" },
+    { name: "Ocean Odyssey", rarity: "Blue" },
+    { name: "Golden Dynasty", rarity: "Blue" },
+    { name: "Temporal Vault", rarity: "Blue" },
+  ],
+  "Playful Battleground": [
+    { name: "Ray", rarity: "Blue" },
+    { name: "Garand", rarity: "Grey" },
+    { name: "Tracked Amphicarrier", rarity: "Grey" },
+    { name: "Jester of Fate", rarity: "Golden" },
+    { name: "Ancient Secret : Arise", rarity: "Golden" },
+    { name: "Your Old Friends", rarity: "Blue" },
+    { name: "Fool Juggling", rarity: "Blue" },
+    { name: "Sacred Fire Trial", rarity: "Blue" },
+    { name: "Scorpion Crate", rarity: "Blue" },
+    { name: "Ancient Secret Battle", rarity: "Blue" },
+  ],
 };
 
-// Mock database
-const MOCK_DB = {
-  "EU-M416": { available: true, code: "EU4829X1" },
-  "JJK-AWM": { available: true, code: "JK991234" },
-  "8A-UMP": { available: false, code: null },
-  "PMGC-AKM": { available: true, code: "PM738291" },
-  "GL-Kar98": { available: false, code: null },
-};
+const THREE_DAYS_MS = 3 * 24 * 60 * 60 * 1000;
+const getCutoff = () => new Date(Date.now() - THREE_DAYS_MS).toISOString();
 
-const SEARCHERS = ["EU-AKM","JJK-M416","GL-AWM","8A-Groza","PB-UMP"];
+const getCardName = (card) => (typeof card === "object" ? card.name : card);
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState("home");
-  const [tradeSubTab, setTradeSubTab] = useState("exchange");
-
-  // Exchange state
-  const [exStep, setExStep] = useState(1);
-  // Step 1 - Give Card
-  const [giveCategory, setGiveCategory] = useState(null);
-  const [giveCard, setGiveCard] = useState(null);
-  const [giveSubStep, setGiveSubStep] = useState(1); // 1=category, 2=card
-  // Step 2 - Want Card
-  const [wantCategory, setWantCategory] = useState(null);
-  const [wantCard, setWantCard] = useState(null);
-  const [wantSubStep, setWantSubStep] = useState(1);
-  // Step 3 - Code
-  const [exCode, setExCode] = useState("");
-  const [exDone, setExDone] = useState(false);
-
-  // Find state
-  const [findMode, setFindMode] = useState(null); // "need" | "have"
-  const [findStep, setFindStep] = useState(1);
-  const [findCategory, setFindCategory] = useState(null);
-  const [findCard, setFindCard] = useState(null);
-  const [findResult, setFindResult] = useState(null);
-
-  const resetExchange = () => {
-    setExStep(1);
-    setGiveCategory(null); setGiveCard(null); setGiveSubStep(1);
-    setWantCategory(null); setWantCard(null); setWantSubStep(1);
-    setExCode(""); setExDone(false);
-  };
-  const resetFind = () => { setFindMode(null); setFindStep(1); setFindCategory(null); setFindCard(null); setFindResult(null); };
-
-  const handleExSubmit = async () => {
-    if (exCode.length === 0) return;
-    const { error } = await supabase.from("listings").insert([{
-      give_card: giveCard,
-      want_card: wantCard,
-      code: exCode,
-      status: "available",
-    }]);
-    if (!error) setExDone(true);
-    else alert("Error saving listing. Try again.");
-  };
-
-  const handleFindCardSelect = async (card) => {
-    setFindCard(card);
-    setFindStep(3);
-    if (findMode === "need") {
-      const { data } = await supabase
-        .from("listings")
-        .select("*")
-        .eq("give_card", card)
-        .eq("status", "available")
-        .limit(1);
-      setFindResult(data && data.length > 0 ? { available: true, code: data[0].code } : { available: false });
-    } else {
-      const { data } = await supabase
-        .from("listings")
-        .select("*")
-        .eq("want_card", card)
-        .eq("status", "available")
-        .limit(1);
-      setFindResult({ searching: data && data.length > 0 });
+const getRarityByName = (cardName) => {
+  for (const cards of Object.values(CARDS)) {
+    for (const card of cards) {
+      if (typeof card === "object" && card.name === cardName) return card.rarity;
     }
-  };
+  }
+  return null;
+};
 
-  const styles = {
-    app: {
-      background: "#0d1117",
-      minHeight: "100vh",
-      color: "#e6e6e6",
-      fontFamily: "'Sora', 'Segoe UI', sans-serif",
-      maxWidth: 430,
-      margin: "0 auto",
-      display: "flex",
-      flexDirection: "column",
-    },
-    header: {
-      background: "#161b22",
-      borderBottom: "1px solid #21262d",
-      padding: "14px 20px",
-      display: "flex",
-      alignItems: "center",
-      gap: 10,
-      position: "sticky",
-      top: 0,
-      zIndex: 10,
-    },
-    logo: {
-      width: 32,
-      height: 32,
-      background: "linear-gradient(135deg, #ff4500, #ff6534)",
-      borderRadius: 8,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 16,
-    },
-    headerTitle: {
-      fontSize: 17,
-      fontWeight: 700,
-      color: "#fff",
-      letterSpacing: "-0.3px",
-    },
-    headerSub: {
-      fontSize: 11,
-      color: "#8b949e",
-      marginTop: 1,
-    },
-    content: {
-      flex: 1,
-      padding: "20px 16px",
-      paddingBottom: 90,
-    },
-    bottomNav: {
-      position: "fixed",
-      bottom: 0,
-      left: "50%",
-      transform: "translateX(-50%)",
-      width: "100%",
-      maxWidth: 430,
-      background: "#161b22",
-      borderTop: "1px solid #21262d",
-      display: "flex",
-      padding: "8px 0 12px",
-    },
-    navItem: (active) => ({
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 4,
-      cursor: "pointer",
-      padding: "6px 0",
-      color: active ? "#ff4500" : "#8b949e",
-      fontSize: 10,
-      fontWeight: active ? 700 : 400,
-      transition: "color 0.15s",
-      border: "none",
-      background: "none",
-    }),
-    navIcon: { fontSize: 20 },
-    card: {
-      background: "#161b22",
-      border: "1px solid #21262d",
-      borderRadius: 12,
-      padding: "16px",
-      marginBottom: 10,
-      cursor: "pointer",
-      transition: "border-color 0.15s, background 0.15s",
-    },
-    cardHover: {
-      background: "#1c2128",
-      borderColor: "#ff4500",
-    },
-    quickActionCard: (color) => ({
-      background: "#161b22",
-      border: `1px solid #21262d`,
-      borderRadius: 14,
-      padding: "20px 16px",
-      cursor: "pointer",
-      flex: 1,
-      transition: "all 0.15s",
-    }),
-    actionIcon: (color) => ({
-      width: 44,
-      height: 44,
-      background: color,
-      borderRadius: 10,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 20,
-      marginBottom: 10,
-    }),
-    statCard: {
-      background: "#161b22",
-      border: "1px solid #21262d",
-      borderRadius: 12,
-      padding: "16px 12px",
-      textAlign: "center",
-      flex: 1,
-    },
-    statNum: (color) => ({
-      fontSize: 26,
-      fontWeight: 800,
-      color: color,
-      lineHeight: 1,
-    }),
-    statLabel: {
-      fontSize: 10,
-      color: "#8b949e",
-      marginTop: 6,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-    },
-    subTabRow: {
-      display: "flex",
-      background: "#21262d",
-      borderRadius: 10,
-      padding: 3,
-      marginBottom: 20,
-    },
-    subTab: (active) => ({
-      flex: 1,
-      padding: "9px 0",
-      textAlign: "center",
-      borderRadius: 8,
-      fontSize: 13,
-      fontWeight: 600,
-      cursor: "pointer",
-      background: active ? "#ff4500" : "transparent",
-      color: active ? "#fff" : "#8b949e",
-      border: "none",
-      transition: "all 0.15s",
-    }),
-    stepLabel: {
-      fontSize: 11,
-      color: "#8b949e",
-      textTransform: "uppercase",
-      letterSpacing: "0.8px",
-      marginBottom: 6,
-    },
-    stepTitle: {
-      fontSize: 16,
-      fontWeight: 700,
-      color: "#fff",
-      marginBottom: 16,
-    },
-    progressBar: {
-      height: 3,
-      background: "#21262d",
-      borderRadius: 2,
-      marginBottom: 20,
-      overflow: "hidden",
-    },
-    progressFill: (pct) => ({
-      height: "100%",
-      width: `${pct}%`,
-      background: "linear-gradient(90deg, #ff4500, #ff6534)",
-      borderRadius: 2,
-      transition: "width 0.3s ease",
-    }),
-    input: {
-      width: "100%",
-      background: "#21262d",
-      border: "1px solid #30363d",
-      borderRadius: 10,
-      padding: "14px 16px",
-      color: "#fff",
-      fontSize: 15,
-      outline: "none",
-      boxSizing: "border-box",
-      letterSpacing: 2,
-    },
-    btn: (disabled) => ({
-      width: "100%",
-      padding: "15px",
-      background: disabled ? "#21262d" : "linear-gradient(135deg, #ff4500, #ff6534)",
-      color: disabled ? "#555" : "#fff",
-      border: "none",
-      borderRadius: 12,
-      fontSize: 15,
-      fontWeight: 700,
-      cursor: disabled ? "not-allowed" : "pointer",
-      marginTop: 16,
-      transition: "all 0.15s",
-    }),
-    backBtn: {
-      background: "none",
-      border: "none",
-      color: "#8b949e",
-      fontSize: 13,
-      cursor: "pointer",
-      padding: "0 0 16px",
-      display: "flex",
-      alignItems: "center",
-      gap: 6,
-    },
-    resultBox: (success) => ({
-      background: success ? "rgba(35,134,54,0.15)" : "rgba(139,148,158,0.1)",
-      border: `1px solid ${success ? "#238636" : "#30363d"}`,
-      borderRadius: 12,
-      padding: 20,
-      textAlign: "center",
-      marginTop: 10,
-    }),
-    findModeCard: {
-      background: "#161b22",
-      border: "1px solid #21262d",
-      borderRadius: 14,
-      padding: "20px 16px",
-      marginBottom: 12,
-      cursor: "pointer",
-      display: "flex",
-      alignItems: "center",
-      gap: 14,
-      transition: "all 0.15s",
-    },
-    findModeIcon: (bg) => ({
-      width: 46,
-      height: 46,
-      background: bg,
-      borderRadius: 12,
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      fontSize: 22,
-      flexShrink: 0,
-    }),
-    sectionTitle: {
-      fontSize: 11,
-      color: "#8b949e",
-      textTransform: "uppercase",
-      letterSpacing: "0.8px",
-      marginBottom: 12,
-      marginTop: 4,
-    },
-    badge: (color) => ({
-      display: "inline-block",
-      background: color,
-      color: "#fff",
-      fontSize: 10,
-      fontWeight: 700,
-      padding: "3px 8px",
-      borderRadius: 20,
-      marginLeft: 8,
-      verticalAlign: "middle",
-    }),
-  };
+const sanitizeUsername = (raw) => (raw || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20);
+const isValidUsername = (u) => {
+  if (!u) return false;
+  const s = u.trim();
+  return /^[A-Za-z0-9_-]{3,20}$/.test(s);
+};
+const normalizeUsername = (u) => (u || "").trim().toLowerCase();
 
-  // ─── HOME ───
-  const HomeScreen = () => (
+const s = {
+  app: { background: "#0d1117", minHeight: "100vh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column", overflowX: "hidden" },
+  header: { background: "#161b22", borderBottom: "1px solid #21262d", padding: "14px 20px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 10 },
+  logo: { width: 32, height: 32, background: "linear-gradient(135deg, #ff4500, #ff6534)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
+  content: { flex: 1, padding: "20px 24px 90px 24px", width: "100%", boxSizing: "border-box" },
+  bottomNav: { position: "fixed", bottom: 0, left: 0, width: "100%", background: "#161b22", borderTop: "1px solid #21262d", display: "flex", padding: "8px 0 12px" },
+  navItem: (active) => ({ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "6px 0", color: active ? "#ff4500" : "#8b949e", fontSize: 10, fontWeight: active ? 700 : 400, border: "none", background: "none" }),
+  card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" },
+  cardHover: { background: "#1c2128", borderColor: "#58a6ff" },
+  pageHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, position: "relative" },
+  subTabRow: { display: "flex", background: "#21262d", borderRadius: 10, padding: 3, marginBottom: 20 },
+  subTab: (active) => ({ flex: 1, padding: "9px 0", textAlign: "center", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", background: active ? "#ff4500" : "transparent", color: active ? "#fff" : "#8b949e", border: "none" }),
+  stepLabel: { fontSize: 11, color: "#8b949e", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 6 },
+  stepTitle: { fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 16 },
+  progressBar: { height: 3, background: "#21262d", borderRadius: 2, marginBottom: 20, overflow: "hidden" },
+  progressFill: (pct) => ({ height: "100%", width: `${pct}%`, background: "linear-gradient(90deg, #ff4500, #ff6534)", borderRadius: 2, transition: "width 0.3s ease" }),
+  input: { width: "100%", background: "#21262d", border: "1px solid #30363d", borderRadius: 10, padding: "14px 16px", color: "#fff", fontSize: 15, outline: "none", boxSizing: "border-box" },
+  btn: (disabled) => ({ width: "100%", padding: "15px", background: disabled ? "#21262d" : "linear-gradient(135deg, #ff4500, #ff6534)", color: disabled ? "#555" : "#fff", border: "none", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: disabled ? "not-allowed" : "pointer", marginTop: 16 }),
+  btnSecondary: { width: "100%", padding: "13px", background: "transparent", color: "#ff4500", border: "1px solid #ff4500", borderRadius: 12, fontSize: 14, fontWeight: 600, cursor: "pointer", marginTop: 10 },
+  backBtn: { background: "none", border: "none", color: "#8b949e", fontSize: 13, cursor: "pointer", padding: "6px 8px", display: "inline-flex", alignItems: "center", gap: 8 },
+  topRightBackBtn: { background: "#0f1720", border: "1px solid #21262d", color: "#8b949e", borderRadius: 8, padding: "6px 10px", cursor: "pointer", fontSize: 13 },
+  resultBox: (success) => ({ background: success ? "rgba(35,134,54,0.15)" : "rgba(139,148,158,0.1)", border: `1px solid ${success ? "#238636" : "#30363d"}`, borderRadius: 12, padding: 20, textAlign: "center", marginTop: 10 }),
+  findModeCard: { background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", marginBottom: 12, cursor: "pointer", display: "flex", alignItems: "center", gap: 14 },
+  findModeIcon: (bg) => ({ width: 46, height: 46, background: bg, borderRadius: 12, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }),
+  sectionTitle: { fontSize: 11, color: "#8b949e", textTransform: "uppercase", letterSpacing: "0.8px", marginBottom: 12, marginTop: 4 },
+  listingCard: { background: "#0d1117", borderRadius: 10, padding: "14px 16px", marginBottom: 10, textAlign: "left", border: "1px solid #30363d" },
+  donationCard: { background: "rgba(88,166,255,0.08)", borderRadius: 10, padding: "14px 16px", marginBottom: 10, textAlign: "left", border: "1px solid #1f6feb" },
+  sectionDivider: { fontSize: 12, fontWeight: 700, color: "#8b949e", margin: "16px 0 8px", textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: "1px solid #21262d", paddingBottom: 6 },
+};
+
+const CardList = ({ items, onSelect, hovered, setHovered }) => (
+  <>
+    {items.map((item) => {
+      const key = typeof item === "object" ? item.name : item;
+      return (
+        <div
+          key={key}
+          style={{ ...s.card, ...(hovered === key ? s.cardHover : {}), ...(getCardName(item) === "Coming Soon" ?{ opacity: 0.35, cursor: "not-allowed"} : {}) }}
+          onMouseEnter={() => setHovered(key)}
+          onMouseLeave={() => setHovered(null)}
+          onClick={() => { if (getCardName(item) !=="Coming Soon") onSelect(item); }}
+        >
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ display: "flex", alignItems: "center" }}>
+              <span style={{ fontSize: 14, fontWeight: 600 }}>
+                {typeof item === "object" ? item.name : item}
+                {typeof item === "string" && NEW_CATEGORIES.includes(item) && (
+                  <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
+  )}
+              </span>
+              {typeof item === "object" && item.rarity && (
+                <span style={{
+                  fontSize: 10, fontWeight: 700, marginLeft: 8,
+                  color: { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", Grey: "#8b949e" }[item.rarity],
+                }}>
+                  {item.rarity}
+                </span>
+              )}
+            </div>
+            <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
+          </div>
+        </div>
+      );
+    })}
+  </>
+);
+
+// ─── HomeScreen ───────────────────────────────────────────────────────────────
+const HomeScreen = ({
+  checkUsername, setCheckUsername,
+  checkLoading, checkResults,
+  handleCheckDonations, handleMarkDone,
+}) => {
+  const navigate = useNavigate();
+  return (
     <div>
       <div style={{ marginBottom: 24 }}>
         <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 2 }}>Welcome to</div>
@@ -377,339 +239,658 @@ export default function App() {
         <div style={{ fontSize: 12, color: "#8b949e", marginTop: 4 }}>BGMI Card Exchange Community</div>
       </div>
 
-      <div style={styles.sectionTitle}>Quick Actions</div>
+      <div style={s.sectionTitle}>Quick Actions</div>
+
       <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-        <div style={styles.quickActionCard()} onClick={() => { setActiveTab("trade"); setTradeSubTab("exchange"); }}>
-          <div style={styles.actionIcon("rgba(255,69,0,0.2)")}>⇅</div>
+        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+          onClick={() => navigate("/exchange")}>
+          <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
           <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange</div>
           <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your card</div>
         </div>
-        <div style={styles.quickActionCard()} onClick={() => { setActiveTab("trade"); setTradeSubTab("find"); }}>
-          <div style={styles.actionIcon("rgba(88,166,255,0.15)")}>🔍</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Code</div>
+
+        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+          onClick={() => navigate("/finddonate")}>
+          <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards & Donate Extras</div>
           <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Browse offers</div>
         </div>
       </div>
 
-      <div style={styles.sectionTitle}>Stats</div>
-      <div style={{ display: "flex", gap: 10 }}>
-        <div style={styles.statCard}>
-          <div style={styles.statNum("#e6e6e6")}>24</div>
-          <div style={styles.statLabel}>Total</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statNum("#f0883e")}>11</div>
-          <div style={styles.statLabel}>Active</div>
-        </div>
-        <div style={styles.statCard}>
-          <div style={styles.statNum("#3fb950")}>13</div>
-          <div style={styles.statLabel}>Done</div>
-        </div>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16 }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4 }}>🎁 Check My Donations</div>
+        <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 12 }}>Enter your Reddit Username / Custom Username to see if someone needs your donated card.</div>
+        <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
+          value={checkUsername} onChange={e => setCheckUsername(sanitizeUsername(e.target.value))} />
+        <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
+          onClick={handleCheckDonations}>
+          {checkLoading ? "Checking..." : "Check"}
+        </button>
+        {checkResults !== null && (
+          <div style={{ marginTop: 12 }}>
+            {checkResults.length === 0 ? (
+              <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center" }}>No donations found for this username</div>
+            ) : (
+              checkResults.map((item, i) => (
+                <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.give_card}{item.quantity > 1 && <span style={{ color: "#ff4500", marginLeft: 6 }}>{item.quantity}x</span>}</div>
+                  {item.claim_code ? (
+                    <>
+                      <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Their exchange code:</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
+                      {item.status !== "done" ? (
+                        <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+                          onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
+                          ✅ Mark as Done
+                        </button>
+                      ) : (
+                        <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Trade Completed</div>
+                      )}
+                    </>
+                  ) : (
+                    <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
-      <div style={{ marginTop: 24, background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
         <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 6 }}>📌 Subreddit</div>
-        <div style={{ fontSize: 13, color: "#58a6ff", fontWeight: 600 }}>r/BGMIcards</div>
+        <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", fontWeight: 600, textDecoration: "none" }}>r/BGMIcards</a>
         <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Join the community for trades & discussions</div>
       </div>
     </div>
   );
+};
 
-  // ─── EXCHANGE TAB ───
-  const ExchangeScreen = () => {
-    const [hovered, setHovered] = useState(null);
+// ─── GiveCardStep ─────────────────────────────────────────────────────────────
+const GiveCardStep = ({
+  giveCards, setGiveCards,
+  giveView, setGiveView,
+  giveCategory, setGiveCategory,
+  onProceed,
+}) => {
+  const [hovered, setHovered] = useState(null);
+  const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
 
-    const progressPct = exStep === 1 ? 33 : exStep === 2 ? 66 : 100;
-
-    if (exDone) return (
-      <div style={{ textAlign: "center", paddingTop: 40 }}>
-        <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
-        <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Listing Submitted!</div>
-        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16, textAlign: "left" }}>
-          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.5px" }}>Summary</div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: "#8b949e" }}>Giving</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#3fb950" }}>{giveCard}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-            <span style={{ fontSize: 12, color: "#8b949e" }}>Wanting</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#58a6ff" }}>{wantCard}</span>
-          </div>
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span style={{ fontSize: 12, color: "#8b949e" }}>Code</span>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: 2 }}>{exCode}</span>
-          </div>
-        </div>
-        <button style={styles.btn(false)} onClick={resetExchange}>Submit Another</button>
-      </div>
-    );
-
-    const CardList = ({ cards, onSelect }) => (
-      <>
-        {cards.map(item => (
-          <div key={item}
-            style={{ ...styles.card, ...(hovered === item ? styles.cardHover : {}) }}
-            onMouseEnter={() => setHovered(item)}
-            onMouseLeave={() => setHovered(null)}
-            onClick={() => onSelect(item)}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: 14, fontWeight: 600 }}>{item}</span>
-              <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
-            </div>
-          </div>
-        ))}
-      </>
-    );
-
-    return (
-      <div>
-        <div style={styles.progressBar}>
-          <div style={styles.progressFill(progressPct)} />
-        </div>
-
-        {/* ── STEP 1: GIVE CARD ── */}
-        {exStep === 1 && (
-          <>
-            <div style={styles.stepLabel}>Step 1 of 3</div>
-            <div style={styles.stepTitle}>
-              Give Card <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}>— which card are you offering?</span>
-            </div>
-            {giveSubStep === 1 && (
-              <>
-                <div style={styles.sectionTitle}>Select Category</div>
-                <CardList cards={CATEGORIES} onSelect={cat => { setGiveCategory(cat); setGiveSubStep(2); }} />
-              </>
-            )}
-            {giveSubStep === 2 && (
-              <>
-                <button style={styles.backBtn} onClick={() => setGiveSubStep(1)}>‹ Back</button>
-                <div style={styles.sectionTitle}>Select Card — <span style={{ color: "#ff4500" }}>{giveCategory}</span></div>
-                <CardList cards={CARDS[giveCategory] || []} onSelect={card => { setGiveCard(card); setExStep(2); setWantSubStep(1); }} />
-              </>
-            )}
-          </>
-        )}
-
-        {/* ── STEP 2: WANT CARD ── */}
-        {exStep === 2 && (
-          <>
-            <button style={styles.backBtn} onClick={() => { setExStep(1); setGiveSubStep(2); }}>‹ Back</button>
-            <div style={styles.stepLabel}>Step 2 of 3</div>
-            <div style={styles.stepTitle}>
-              Want Card <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}>— which card do you need?</span>
-            </div>
-            <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 10, padding: "10px 14px", marginBottom: 14, display: "flex", justifyContent: "space-between" }}>
-              <span style={{ fontSize: 11, color: "#8b949e" }}>Giving</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#3fb950" }}>{giveCard}</span>
-            </div>
-            {wantSubStep === 1 && (
-              <>
-                <div style={styles.sectionTitle}>Select Category</div>
-                <CardList cards={CATEGORIES} onSelect={cat => { setWantCategory(cat); setWantSubStep(2); }} />
-              </>
-            )}
-            {wantSubStep === 2 && (
-              <>
-                <button style={styles.backBtn} onClick={() => setWantSubStep(1)}>‹ Back</button>
-                <div style={styles.sectionTitle}>Select Card — <span style={{ color: "#58a6ff" }}>{wantCategory}</span></div>
-                <CardList cards={CARDS[wantCategory] || []} onSelect={card => { setWantCard(card); setExStep(3); }} />
-              </>
-            )}
-          </>
-        )}
-
-        {/* ── STEP 3: CODE ── */}
-        {exStep === 3 && (
-          <>
-            <button style={styles.backBtn} onClick={() => { setExStep(2); setWantSubStep(2); }}>‹ Back</button>
-            <div style={styles.stepLabel}>Step 3 of 3</div>
-            <div style={styles.stepTitle}>Enter Exchange Code</div>
-            <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
-                <span style={{ fontSize: 11, color: "#8b949e" }}>Giving</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#3fb950" }}>{giveCard}</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <span style={{ fontSize: 11, color: "#8b949e" }}>Wanting</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: "#58a6ff" }}>{wantCard}</span>
-              </div>
-            </div>
-            <input
-              style={styles.input}
-              placeholder="Enter up to 10-digit code"
-              maxLength={10}
-              inputMode="numeric"
-              value={exCode}
-              onChange={e => setExCode(e.target.value.replace(/\D/g, ""))}
-            />
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>Numbers only • Max 10 digits • Required</div>
-            <button style={styles.btn(exCode.length === 0)} onClick={handleExSubmit}>
-              Submit Listing
-            </button>
-          </>
-        )}
-      </div>
-    );
+  const toggleCard = (item) => {
+    const cardName = getCardName(item);
+    const cardRarity = getRarityByName(cardName);
+    if (giveCards.includes(cardName)) {
+      setGiveCards(prev => prev.filter(c => c !== cardName));
+    } else {
+      if (giveCards.length >= 3) return;
+      if (lockedRarity && cardRarity !== lockedRarity) return;
+      setGiveCards(prev => [...prev, cardName]);
+    }
   };
 
-  // ─── FIND TAB ───
-  const FindScreen = () => {
-    const [hovered, setHovered] = useState(null);
+  return (
+    <div>
+      <div style={s.stepLabel}>Step 1 of 3</div>
+      <div style={s.stepTitle}>
+        Give Card(s)
+        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}> — select up to 3 same-rarity cards</span>
+      </div>
 
-    if (!findMode) return (
-      <>
-        <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>How would you like to search?</div>
-        <div style={{ ...styles.findModeCard, ...(hovered === "need" ? { borderColor: "#ff4500", background: "#1c2128" } : {}) }}
-          onMouseEnter={() => setHovered("need")}
-          onMouseLeave={() => setHovered(null)}
-          onClick={() => { setFindMode("need"); setFindStep(1); }}>
-          <div style={styles.findModeIcon("rgba(255,69,0,0.2)")}>🔍</div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I need a specific card</div>
-            <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players offering the card you want</div>
+      {giveCards.length > 0 && (
+        <div style={{ background: "#0f2318", border: "1px solid #238636", borderRadius: 10, padding: "12px 14px", marginBottom: 16 }}>
+          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 8 }}>
+            Selected ({giveCards.length}/3){lockedRarity ? "  —  " + lockedRarity + " rarity locked" : ""}
           </div>
-          <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
+          {giveCards.map((c, i) => (
+            <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#3fb950" }}>{c}</span>
+              <button
+                onClick={(e) => { e.stopPropagation(); setGiveCards(prev => prev.filter(x => x !== c)); }}
+                style={{ background: "none", border: "none", color: "#8b949e", cursor: "pointer", fontSize: 18, lineHeight: 1, padding: "0 4px" }}
+              >×</button>
+            </div>
+          ))}
         </div>
-        <div style={{ ...styles.findModeCard, ...(hovered === "have" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
-          onMouseEnter={() => setHovered("have")}
-          onMouseLeave={() => setHovered(null)}
-          onClick={() => { setFindMode("have"); setFindStep(1); }}>
-          <div style={styles.findModeIcon("rgba(88,166,255,0.15)")}>💎</div>
-          <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I have a card to give</div>
-            <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players looking for your card</div>
+      )}
+
+      {giveCards.length > 0 && giveView === "category" && (
+        <button style={s.btn(false)} onClick={(e) => { e.stopPropagation(); onProceed(); }}>
+          Proceed with {giveCards.length} card{giveCards.length > 1 ? "s" : ""} — Next Step →
+        </button>
+      )}
+
+      {giveView === "category" && (
+        <div style={{ marginTop: giveCards.length > 0 ? 20 : 0 }}>
+          <div style={s.sectionTitle}>{giveCards.length > 0 ? "Or add from another category:" : "Select Category"}</div>
+          {CATEGORIES.map(cat => (
+            <div
+              key={cat}
+              style={{ ...s.card, ...(hovered === cat ? s.cardHover : {}) }}
+              onMouseEnter={() => setHovered(cat)}
+              onMouseLeave={() => setHovered(null)}
+              onClick={(e) => { e.stopPropagation(); setGiveCategory(cat); setGiveView("cards"); }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>
+  {cat}
+  {NEW_CATEGORIES.includes(cat) && (
+    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
+  )}
+</span>
+                <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {giveView === "cards" && (
+        <div>
+          <div style={s.pageHeader}>
+            <button style={s.backBtn} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>‹ Back to Categories</button>
+            <div />
           </div>
-          <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
-        </div>
-      </>
-    );
-
-    if (findStep === 3 && findResult !== null) return (
-      <>
-        <button style={styles.backBtn} onClick={resetFind}>‹ Back to Search</button>
-        <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 4 }}>Result for</div>
-        <div style={{ fontSize: 17, fontWeight: 800, color: "#ff4500", marginBottom: 16 }}>{findCard}</div>
-
-        {findMode === "need" ? (
-          findResult.available ? (
-            <div style={styles.resultBox(true)}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>🎉</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#3fb950", marginBottom: 8 }}>Card Available!</div>
-              <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 14 }}>Use this code to exchange on Reddit</div>
-              <div style={{ background: "#0d1117", borderRadius: 8, padding: "12px 20px", display: "inline-block" }}>
-                <span style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: 3 }}>{findResult.code}</span>
-              </div>
-              <div style={{ marginTop: 14 }}>
-                <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", textDecoration: "none" }}>
-                  → Go to r/BGMIcards to complete trade
-                </a>
-              </div>
-            </div>
-          ) : (
-            <div style={styles.resultBox(false)}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>😔</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#8b949e" }}>Not Available</div>
-              <div style={{ fontSize: 12, color: "#8b949e", marginTop: 8 }}>No one is currently offering this card</div>
-            </div>
-          )
-        ) : (
-          findResult.searching ? (
-            <div style={styles.resultBox(true)}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>✅</div>
-              <div style={{ fontSize: 16, fontWeight: 700, color: "#3fb950", marginBottom: 8 }}>Someone needs this!</div>
-              <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 14 }}>A player is looking for this card</div>
-              <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", textDecoration: "none" }}>
-                → Go to r/BGMIcards to connect
-              </a>
-            </div>
-          ) : (
-            <div style={styles.resultBox(false)}>
-              <div style={{ fontSize: 32, marginBottom: 10 }}>🤷</div>
-              <div style={{ fontSize: 15, fontWeight: 700, color: "#8b949e" }}>No one searching</div>
-              <div style={{ fontSize: 12, color: "#8b949e", marginTop: 8 }}>No active requests for this card right now</div>
-            </div>
-          )
-        )}
-      </>
-    );
-
-    return (
-      <>
-        <button style={styles.backBtn} onClick={findStep === 1 ? resetFind : () => setFindStep(1)}>‹ Back</button>
-        <div style={styles.progressBar}>
-          <div style={styles.progressFill(findStep === 1 ? 50 : 100)} />
-        </div>
-
-        {findStep === 1 && (
-          <>
-            <div style={styles.stepLabel}>Step 1 of 2</div>
-            <div style={styles.stepTitle}>Select Category</div>
-            {CATEGORIES.map(cat => (
-              <div key={cat}
-                style={{ ...styles.card, ...(hovered === cat ? styles.cardHover : {}) }}
-                onMouseEnter={() => setHovered(cat)}
+          <div style={s.sectionTitle}>
+            {giveCategory}
+            {lockedRarity ? "  —  " + lockedRarity + " only" : "  —  tap to select"}
+          </div>
+          {(CARDS[giveCategory] || []).map((item) => {
+            const cardName = getCardName(item);
+            const cardRarity = getRarityByName(cardName);
+            const isSelected = giveCards.includes(cardName);
+            const isDisabled = !isSelected && (
+  cardName === "Coming Soon" ||
+  (lockedRarity && cardRarity !== lockedRarity) ||
+  giveCards.length >= 3
+);
+            return (
+              <div
+                key={cardName}
+                style={{
+                  ...s.card,
+                  ...(hovered === cardName && !isDisabled ? s.cardHover : {}),
+                  ...(isSelected ? { borderColor: "#3fb950", background: "#0f2318" } : {}),
+                  ...(isDisabled ? { opacity: 0.35, cursor: "not-allowed" } : {}),
+                }}
+                onMouseEnter={() => !isDisabled && setHovered(cardName)}
                 onMouseLeave={() => setHovered(null)}
-                onClick={() => { setFindCategory(cat); setFindStep(2); }}>
+                onClick={(e) => { e.stopPropagation(); if (!isDisabled) toggleCard(item); }}
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ fontSize: 14, fontWeight: 600 }}>{cat}</span>
-                  <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
+                  <div style={{ display: "flex", alignItems: "center" }}>
+                    <span style={{ fontSize: 14, fontWeight: 600 }}>{cardName}</span>
+                    {item.rarity && (
+                      <span style={{
+                        fontSize: 10, fontWeight: 700, marginLeft: 8,
+                        color: { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", Grey: "#8b949e" }[item.rarity],
+                      }}>{item.rarity}</span>
+                    )}
+                  </div>
+                  <span style={{ fontSize: 18, color: isSelected ? "#3fb950" : "#8b949e" }}>
+                    {isSelected ? "✓" : "›"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+          <button style={s.btnSecondary} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>
+            Done selecting from this category ✓
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── ExchangeScreen ───────────────────────────────────────────────────────────
+const ExchangeScreen = ({
+  exStep, setExStep,
+  giveCards, setGiveCards,
+  giveView, setGiveView,
+  giveCategory, setGiveCategory,
+  wantCategory, setWantCategory,
+  wantCard, setWantCard,
+  wantSubStep, setWantSubStep,
+  exCode, setExCode,
+  exDone,
+  resetExchange, handleExSubmit,
+}) => {
+  const [hovered, setHovered] = useState(null);
+  const progressPct = exStep === 1 ? 33 : exStep === 2 ? 66 : 100;
+  const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
+
+  if (exDone) return (
+    <div style={{ textAlign: "center", paddingTop: 40 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Listing Submitted!</div>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16, textAlign: "left" }}>
+        <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 10, textTransform: "uppercase" }}>Summary</div>
+        <div style={{ marginBottom: 8 }}>
+          <span style={{ fontSize: 12, color: "#8b949e" }}>Giving</span>
+          <div style={{ marginTop: 4 }}>
+            {giveCards.map((c, i) => (
+              <div key={i} style={{ fontSize: 13, fontWeight: 700, color: "#3fb950" }}>{c}</div>
+            ))}
+          </div>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+          <span style={{ fontSize: 12, color: "#8b949e" }}>Wanting</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#58a6ff" }}>{wantCard}</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "space-between" }}>
+          <span style={{ fontSize: 12, color: "#8b949e" }}>Code</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#fff", letterSpacing: 2 }}>{exCode}</span>
+        </div>
+      </div>
+      <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 16 }}>⏳ Listing expires in 3 days</div>
+      <button style={s.btn(false)} onClick={resetExchange}>Submit Another</button>
+    </div>
+  );
+
+  return (
+    <div>
+      <div style={s.progressBar}><div style={s.progressFill(progressPct)} /></div>
+
+      {exStep === 1 && (
+        <GiveCardStep
+          giveCards={giveCards}
+          setGiveCards={setGiveCards}
+          giveView={giveView}
+          setGiveView={setGiveView}
+          giveCategory={giveCategory}
+          setGiveCategory={setGiveCategory}
+          onProceed={() => { setExStep(2); setWantSubStep(1); }}
+        />
+      )}
+
+      {exStep === 2 && (
+        <>
+          <div style={s.pageHeader}>
+            <button style={s.backBtn} onClick={() => { setExStep(1); setGiveView("category"); }}>‹ Back</button>
+            <div />
+          </div>
+          <div style={s.stepLabel}>Step 2 of 3</div>
+          <div style={s.stepTitle}>Want Card <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}>— which card do you need?</span></div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
+            <span style={{ fontSize: 11, color: "#8b949e" }}>Giving</span>
+            {giveCards.map((c, i) => (
+              <div key={i} style={{ fontSize: 12, fontWeight: 700, color: "#3fb950", marginTop: 2 }}>{c}</div>
+            ))}
+          </div>
+          {wantSubStep === 1 && (
+            <>
+              <div style={s.sectionTitle}>Select Category</div>
+              <CardList items={CATEGORIES} onSelect={cat => { setWantCategory(cat); setWantSubStep(2); }} hovered={hovered} setHovered={setHovered} />
+            </>
+          )}
+          {wantSubStep === 2 && (
+            <>
+              <div style={s.pageHeader}>
+                <button style={s.backBtn} onClick={() => setWantSubStep(1)}>‹ Back</button>
+                <div />
+              </div>
+              <div style={s.sectionTitle}>Select Card — <span style={{ color: "#58a6ff" }}>{wantCategory}</span></div>
+              <CardList
+                items={(CARDS[wantCategory] || []).filter(c => !lockedRarity || c.rarity === lockedRarity)}
+                onSelect={card => { setWantCard(getCardName(card)); setExStep(3); }}
+                hovered={hovered} setHovered={setHovered}
+              />
+            </>
+          )}
+        </>
+      )}
+
+      {exStep === 3 && (
+        <>
+          <button style={s.backBtn} onClick={() => { setExStep(2); setWantSubStep(2); }}>‹ Back</button>
+          <div style={s.stepLabel}>Step 3 of 3</div>
+          <div style={s.stepTitle}>Enter Exchange Code</div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16 }}>
+            <div style={{ marginBottom: 8 }}>
+              <span style={{ fontSize: 11, color: "#8b949e" }}>Giving</span>
+              {giveCards.map((c, i) => (
+                <div key={i} style={{ fontSize: 13, fontWeight: 700, color: "#3fb950", marginTop: 2 }}>{c}</div>
+              ))}
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 11, color: "#8b949e" }}>Wanting</span>
+              <span style={{ fontSize: 13, fontWeight: 700, color: "#58a6ff" }}>{wantCard}</span>
+            </div>
+          </div>
+          <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
+            inputMode="numeric" autoComplete="off" autoFocus
+            value={exCode} onChange={e => setExCode(e.target.value.replace(/\D/g, ""))} />
+          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>Numbers only • Max 10 digits • Required</div>
+          <button style={s.btn(exCode.length < 7)} onClick={handleExSubmit}>Submit Listing</button>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ─── FindScreen ───────────────────────────────────────────────────────────────
+const FindScreen = ({
+  defaultMode = null,
+  findMode, setFindMode,
+  findStep, setFindStep,
+  findCategory, setFindCategory,
+  findCard, setFindCard,
+  findResult, setFindResult,
+  findLoading, setFindLoading,
+  donateStep, setDonateStep,
+  donorUsername, setDonorUsername,
+  donateCard, setDonateCard,
+  donateQuantity, setDonateQuantity,
+  donateListedCount,
+  donateLoading,
+  claimStep, setClaimStep,
+  claimCode, setClaimCode,
+  claimListingId, setClaimListingId,
+  claimLoading,
+  resetFind,
+  handleDonateList,
+  handleClaimDonation,
+  handleFindCardSelect,
+  handleMarkDone,
+}) => {
+  const navigate = useNavigate();
+  const [hovered, setHovered] = useState(null);
+    const groupedDonations = (findResult && findResult.donations) ? Object.values(
+    (findResult.donations || []).reduce((acc, d) => {
+      const key = d.donor_username || "unknown";
+      if (!acc[key]) acc[key] = { donor_username: key, ids: [], count: 0 };
+      acc[key].ids.push(d.id);
+      acc[key].count += 1;
+      return acc;
+    }, {})
+  ) : [];
+
+  if (!findMode) return (
+    <>
+      <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>How would you like to search?</div>
+      <div style={{ ...s.findModeCard, ...(hovered === "need" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
+        onMouseEnter={() => setHovered("need")} onMouseLeave={() => setHovered(null)}
+        onClick={() => { setFindMode("need"); setFindStep(1); navigate("/find"); }}>
+        <div style={s.findModeIcon("rgba(255,69,0,0.2)")}>🔍</div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I need a specific card</div>
+          <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players offering the card you want</div>
+        </div>
+        <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
+      </div>
+      <div style={{ ...s.findModeCard, ...(hovered === "have" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
+        onMouseEnter={() => setHovered("have")} onMouseLeave={() => setHovered(null)}
+        onClick={() => { setFindMode("have"); setFindStep(1); navigate("/donate"); }}>
+        <div style={s.findModeIcon("rgba(88,166,255,0.15)")}>💎</div>
+        <div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I have a card to Donate</div>
+          <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players looking for your card</div>
+        </div>
+        <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
+      </div>
+    </>
+  );
+
+  if (donateStep === "username") return (
+    <div style={{ position: "relative" }}>
+      <button style={s.topRightBackBtn} onClick={() => setDonateStep("idle")}>← Back to search</button>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>List as Donation</div>
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{donateCard}</span></div>
+      <div style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "center" }}>
+        <div style={{ flex: 1, fontSize: 13, color: "#8b949e" }}>How many copies do you want to donate?</div>
+        <select
+          style={{ ...s.input, maxWidth: 120, padding: "12px 10px" }}
+          value={donateQuantity}
+          onChange={e => setDonateQuantity(Number(e.target.value))}
+        >
+          {[1, 2, 3, 4, 5].map(q => (
+            <option key={q} value={q}>{q} card{q > 1 ? "s" : ""}</option>
+          ))}
+        </select>
+      </div>
+      <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your Reddit Username or a Custom Username of your choice below :</div>
+      <input style={s.input} placeholder="Enter your Reddit Username / Custom Username here."
+        value={donorUsername} onChange={e => setDonorUsername(sanitizeUsername(e.target.value))} />
+      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>NOTE : This will be your permanent login Username. Please save it somewhere.</div>
+      <button type="button" style={s.btn(donateLoading || !isValidUsername(donorUsername))} onClick={handleDonateList}>
+        {donateLoading ? "Listing..." : `List ${donateQuantity} card${donateQuantity > 1 ? "s" : ""}`}
+      </button>
+    </div>
+  );
+
+  if (donateStep === "done") return (
+    <div style={{ textAlign: "center", paddingTop: 40 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>🎁</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Card Listed!</div>
+      <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>
+        <span style={{ color: "#58a6ff", fontWeight: 600 }}>{donateCard}</span> {donateListedCount > 1 ? `(${donateListedCount} copies) are` : "is"} now listed as available for donation.
+      </div>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16, textAlign: "left" }}>
+        <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 6 }}>To check if someone needs your card:</div>
+        <div style={{ fontSize: 12, color: "#e6e6e6" }}>Go to <span style={{ color: "#ff4500", fontWeight: 600 }}>Home → Check My Donations</span> and enter your Reddit Username.</div>
+      </div>
+      <button style={s.btn(false)} onClick={resetFind}>Done</button>
+    </div>
+  );
+
+  if (claimStep === "input") return (
+    <div>
+      <button style={s.backBtn} onClick={() => setClaimStep("idle")}>‹ Back</button>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>Claim Donation</div>
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{findCard}</span></div>
+      <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code — the donor will see this and complete the trade in BGMI soon :</div>
+      <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
+        inputMode="numeric" autoComplete="off" autoFocus
+        value={claimCode} onChange={e => setClaimCode(e.target.value.replace(/\D/g, ""))} />
+      <button style={s.btn(claimCode.length < 7 || claimLoading)} onClick={handleClaimDonation}>
+        {claimLoading ? "Submitting..." : "Submit Code"}
+      </button>
+    </div>
+  );
+
+  if (claimStep === "done") return (
+    <div style={{ textAlign: "center", paddingTop: 40 }}>
+      <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Code Submitted!</div>
+      <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>The donor will see your code and complete the trade in BGMI soon.</div>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16, textAlign: "left" }}>
+        <div style={{ fontSize: 11, color: "#8b949e" }}>Your exchange code</div>
+        <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{claimCode}</div>
+      </div>
+      <button style={s.btn(false)} onClick={resetFind}>Done</button>
+    </div>
+  );
+
+  const findStepContent = (
+    <>
+      {findLoading && <div style={{ textAlign: "center", color: "#8b949e", padding: 20 }}>Searching...</div>}
+      {!findLoading && findResult && findMode === "need" && (
+        findResult.available ? (
+          <div style={s.resultBox(true)}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🎉</div>
+            {findResult.listings.length > 0 && (
+              <>
+                <div style={s.sectionDivider}>Exchange Listings ({findResult.listings.length})</div>
+                {findResult.listings.map((item, i) => (
+                  <div key={i} style={s.listingCard}>
+                    <div style={{ fontSize: 11, color: "#8b949e" }}>Offering: <span style={{ color: "#3fb950", fontWeight: 700 }}>{item.give_card}</span></div>
+                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff", fontWeight: 700 }}>{item.want_card}</span></div>
+                    <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 8 }}>{item.code}</div>
+                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 10 }}>If this code has already been used, mark it so other searchers won't see it again.</div>
+                    <button type="button" style={{ ...s.btnSecondary, marginTop: 10, padding: "9px", fontSize: 13 }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleMarkDone(item.id);
+                        setFindResult(prev => prev ? { ...prev, listings: (prev.listings || []).filter(listing => listing.id !== item.id) } : prev);
+                      }}>
+                      Mark as used / Remove listing
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+            {findResult.donations.length > 0 && (
+              <>
+                <div style={s.sectionDivider}>🎁 Free Donations ({findResult.donations.length})</div>
+                {groupedDonations.map((g, i) => (
+                  <div key={i} style={s.donationCard}>
+                    <div style={{ fontSize: 11, color: "#8b949e" }}>Donor: <span style={{ color: "#58a6ff", fontWeight: 700 }}>{g.donor_username}</span> <span style={{ color: "#8b949e", marginLeft: 8 }}>({g.count}x)</span></div>
+                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Enter your exchange code & get this card !</div>
+                    <button type="button" style={{ ...s.btnSecondary, marginTop: 10, padding: "9px", fontSize: 13 }}
+                      onClick={() => { setClaimListingId(g.ids[0]); setClaimStep("input"); }}>
+                      Claim this card — Enter your Exchange Code
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
+            <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", textDecoration: "none", display: "block", marginTop: 12 }}>→ Go to r/BGMIcards</a>
+          </div>
+        ) : (
+          <div style={s.resultBox(false)}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>😔</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#8b949e" }}>Not Available</div>
+            <div style={{ fontSize: 12, color: "#8b949e", marginTop: 8 }}>No one is currently offering this card</div>
+          </div>
+        )
+      )}
+      {!findLoading && findResult && findMode === "have" && (
+        findResult.searching ? (
+          <div style={s.resultBox(true)}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>✅</div>
+            <div style={{ fontSize: 16, fontWeight: 700, color: "#3fb950", marginBottom: 8 }}>{findResult.listings.length} player{findResult.listings.length > 1 ? "s need" : " needs"} this!</div>
+            <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 14 }}>Give them your card and use their exchange code</div>
+            {findResult.listings.map((item, i) => (
+              <div key={i} style={s.listingCard}>
+                <div style={{ fontSize: 11, color: "#8b949e" }}>They are offering: <span style={{ color: "#ff4500", fontWeight: 700 }}>{item.give_card}</span></div>
+                <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>They want: <span style={{ color: "#58a6ff", fontWeight: 700 }}>{item.want_card}</span></div>
+                <div style={{ fontSize: 20, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 8 }}>{item.code}</div>
+                <div style={{ marginTop: 10 }}>
+                  <button type="button" style={{ ...s.btnSecondary, padding: "8px", fontSize: 13, marginRight: 8 }}
+                    onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); setFindResult(prev => prev ? { ...prev, listings: (prev.listings || []).filter(listing => listing.id !== item.id) } : prev); }}>
+                    Mark as used
+                  </button>
                 </div>
               </div>
             ))}
-          </>
-        )}
+            <div style={{ marginTop: 12 }}>
+              <button type="button" style={s.btnSecondary} onClick={(e) => { e.preventDefault(); setDonateCard(findResult.cardToList || findCard); setDonateStep("username"); }}>
+                🎁 List as Donation
+              </button>
+            </div>
+            <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", textDecoration: "none" }}>→ Go to r/BGMIcards to connect</a>
+          </div>
+        ) : (
+          <div style={s.resultBox(false)}>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>🤷</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: "#8b949e", marginBottom: 8 }}>No one needs this card right now</div>
+            <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>But you can list it as a donation — someone may need it later!</div>
+            <button type="button" style={s.btnSecondary} onClick={(e) => { e.preventDefault(); setDonateCard(findResult.cardToList || findCard); setDonateStep("username"); }}>
+              🎁 List as Donation
+            </button>
+          </div>
+        )
+      )}
+    </>
+  );
 
-        {findStep === 2 && (
-          <>
-            <div style={styles.stepLabel}>Step 2 of 2</div>
-            <div style={styles.stepTitle}>Select Card — <span style={{ color: "#ff4500" }}>{findCategory}</span></div>
-            {(CARDS[findCategory] || []).map(card => {
-              const entry = MOCK_DB[card];
-              const isAvail = entry?.available;
-              return (
-                <div key={card}
-                  style={{ ...styles.card, ...(hovered === card ? styles.cardHover : {}) }}
-                  onMouseEnter={() => setHovered(card)}
-                  onMouseLeave={() => setHovered(null)}
-                  onClick={() => handleFindCardSelect(card)}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <span style={{ fontSize: 14, fontWeight: 600 }}>{card}</span>
-                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      {findMode === "need" && entry && (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20,
-                          background: isAvail ? "rgba(35,134,54,0.2)" : "rgba(139,148,158,0.1)",
-                          color: isAvail ? "#3fb950" : "#8b949e",
-                          border: `1px solid ${isAvail ? "#238636" : "#30363d"}` }}>
-                          {isAvail ? "Available" : "Unavailable"}
-                        </span>
-                      )}
-                      <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </>
-        )}
-      </>
-    );
+  return (
+    <>
+      <div style={s.pageHeader}>
+        <button style={s.backBtn} onClick={findStep === 1 ? () => { resetFind(); navigate("/finddonate"); } : () => setFindStep(1)}>‹ Back</button>
+        <div />
+      </div>
+      <div style={s.progressBar}><div style={s.progressFill(findStep === 1 ? 50 : 100)} /></div>
+      {findStep === 1 && (
+        <>
+          <div style={s.stepLabel}>Step 1 of 2</div>
+          <div style={s.stepTitle}>Select Category</div>
+          <CardList items={CATEGORIES} onSelect={cat => { setFindCategory(cat); setFindStep(2); }} hovered={hovered} setHovered={setHovered} />
+        </>
+      )}
+      {findStep === 2 && (
+        <>
+          <div style={s.stepLabel}>Step 2 of 2</div>
+          <div style={s.stepTitle}>Select Card — <span style={{ color: "#ff4500" }}>{findCategory}</span></div>
+          <CardList items={CARDS[findCategory] || []} onSelect={handleFindCardSelect} hovered={hovered} setHovered={setHovered} />
+        </>
+      )}
+      {findStep === 3 && (
+        <>
+          <div style={s.pageHeader}>
+            <div />
+            <button style={s.topRightBackBtn} onClick={resetFind}>‹ Back to Search</button>
+          </div>
+          <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 4 }}>Result for</div>
+          <div style={{ fontSize: 17, fontWeight: 800, color: "#ff4500", marginBottom: 16 }}>{findCard}</div>
+          {findStepContent}
+        </>
+      )}
+    </>
+  );
+};
+const RulesPage = () => (
+  <div>
+    <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>📋 Trade <span style={{ color: "#ff4500" }}>Rules</span></div>
+    <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>r/BGMIcards community guidelines</div>
+
+    {[
+      { title: "1. Use the Portal, Not the Subreddit", desc: "Do not post card requests in subreddit comments or posts. Use the portal exclusively for all trade-related activity." },
+      { title: "2. Stick to Your Username", desc: "Always use the same username when listing donations. Changing your username will result in losing access to your donation history and pending claims." },
+      { title: "3. Keep it Organised", desc: "After completing a trade, try to mark your listing as done within 24 hours. Outdated listings clutter the portal and waste other users' time on used codes." },
+      { title: "4. Don't Mark Others' Listings as Used", desc: "Only mark a listing as 'used' if you personally completed that trade. Falsely marking active listings removes valid offers for other users and may result in a ban." },
+      { title: "5. Found a Bug? Let Us Know", desc: <span>If you encounter any issue or unexpected behavior on the portal, DM <a href="https://www.reddit.com/message/compose/?to=AryanV4" style={{ color: "#58a6ff", textDecoration: "none" }}>u/AryanV4</a> on Reddit. Direct messages ensure faster resolution.</span> },
+    ].map((rule, i) => (
+      <div key={i} style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 10 }}>
+        <div style={{ fontSize: 14, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{rule.title}</div>
+        <div style={{ fontSize: 12, color: "#8b949e", lineHeight: 1.6 }}>{rule.desc}</div>
+      </div>
+    ))}
+  </div>
+);
+// ─── StockScreen ──────────────────────────────────────────────────────────────
+const StockScreen = () => {
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [stockData, setStockData] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [hovered, setHovered] = useState(null);
+
+  const fetchStock = async (category) => {
+    setSelectedCategory(category); setLoading(true);
+    const cutoff = getCutoff();
+    const counts = {};
+    for (const card of (CARDS[category] || [])) {
+      const cardName = getCardName(card);
+      const { count } = await supabase.from("listings").select("*", { count: "exact", head: true })
+        .eq("give_card", cardName).eq("status", "available").gte("created_at", cutoff);
+      counts[cardName] = count || 0;
+    }
+    setStockData(counts); setLoading(false);
   };
 
-  // ─── OFFERS ───
-  const OffersScreen = () => (
+  const cs = {
+    card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer" },
+    backBtn: { background: "none", border: "none", color: "#8b949e", fontSize: 13, cursor: "pointer", padding: "0 0 16px" },
+  };
+
+  if (!selectedCategory) return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 16 }}>Active Offers</div>
-      {Object.entries(MOCK_DB).filter(([,v]) => v.available).map(([card, data]) => (
-        <div key={card} style={styles.card}>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Stock</div>
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Check available cards for exchange</div>
+      {CATEGORIES.map(cat => (
+        <div key={cat} style={{ ...cs.card, ...(hovered === cat ? { background: "#1c2128", borderColor: "#ff4500" } : {}) }}
+          onMouseEnter={() => setHovered(cat)} onMouseLeave={() => setHovered(null)}
+          onClick={() => fetchStock(cat)}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              <div style={{ fontSize: 14, fontWeight: 600, color: "#fff" }}>{card}</div>
-              <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Code: {data.code}</div>
-            </div>
-            <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 10px", borderRadius: 20,
-              background: "rgba(35,134,54,0.2)", color: "#3fb950", border: "1px solid #238636" }}>
-              Available
-            </span>
+            <span style={{ fontSize: 14, fontWeight: 600 }}>
+  {cat}
+  {NEW_CATEGORIES.includes(cat) && (
+    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
+  )}
+</span>
+            <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
           </div>
         </div>
       ))}
@@ -717,50 +898,420 @@ export default function App() {
   );
 
   return (
-    <div style={styles.app}>
+    <div>
+      <div style={s.pageHeader}>
+        <button style={cs.backBtn} onClick={() => { setSelectedCategory(null); setStockData({}); }}>‹ Back</button>
+        <div />
+      </div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{selectedCategory}</div>
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Available listings (last 3 days)</div>
+      {loading ? (
+        <div style={{ textAlign: "center", color: "#8b949e", padding: 20 }}>Loading...</div>
+      ) : (
+        (CARDS[selectedCategory] || []).map(card => {
+          const cardName = getCardName(card);
+          return (
+            <div key={cardName} style={{ ...cs.card, cursor: "default" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{cardName}</span>
+                <span style={{
+                  fontSize: 13, fontWeight: 700,
+                  color: stockData[cardName] > 0 ? "#3fb950" : "#8b949e",
+                  background: stockData[cardName] > 0 ? "rgba(35,134,54,0.15)" : "rgba(139,148,158,0.1)",
+                  border: `1px solid ${stockData[cardName] > 0 ? "#238636" : "#30363d"}`,
+                  padding: "3px 10px", borderRadius: 20
+                }}>
+                  {stockData[cardName] !== undefined ? `${stockData[cardName]}x` : "..."}
+                </span>
+              </div>
+            </div>
+          );
+        })
+      )}
+    </div>
+  );
+};
+
+// ─── CheckDonationsPage ───────────────────────────────────────────────────────
+const CheckDonationsPage = () => {
+  const [checkUsername, setCheckUsername] = useState("");
+  const [checkResults, setCheckResults] = useState(null);
+  const [checkLoading, setCheckLoading] = useState(false);
+
+  const handleCheckDonations = async () => {
+    if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
+    setCheckLoading(true);
+    const { data } = await supabase.from("listings").select("*")
+      .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
+    const grouped = Object.values(
+  (data || []).reduce((acc, item) => {
+    const key = item.give_card + "_" + (item.claim_code || "none");
+    if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+    acc[key].quantity += 1;
+    return acc;
+  }, {})
+);
+setCheckResults(grouped);    setCheckLoading(false);
+  };
+
+  const handleMarkDone = async (id) => {
+    await supabase.from("listings").update({ status: "done" }).eq("id", id);
+    setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done" } : item) : prev);
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>🎁 Check My Donations</div>
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>See if someone need your donated card</div>
+      <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
+        value={checkUsername} onChange={e => setCheckUsername(sanitizeUsername(e.target.value))} />
+      <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
+        onClick={handleCheckDonations}>
+        {checkLoading ? "Checking..." : "Check"}
+      </button>
+      {checkResults !== null && (
+        <div style={{ marginTop: 12 }}>
+          {checkResults.length === 0 ? (
+            <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center" }}>No donations found for this username</div>
+          ) : (
+            checkResults.map((item, i) => (
+              <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.give_card}{item.quantity > 1 && <span style={{ color: "#ff4500", marginLeft: 6 }}>{item.quantity}x</span>}</div>
+                {item.claim_code ? (
+                  <>
+                    <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
+                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Their exchange code:</div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
+                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
+                    {item.status !== "done" ? (
+                      <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+                        onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
+                        ✅ Mark as Done
+                      </button>
+                    ) : (
+                      <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Trade Completed</div>
+                    )}
+                  </>
+                ) : (
+                  <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// ─── Main App (with Router) ───────────────────────────────────────────────────
+function AppContent() {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Exchange state
+  const [exStep, setExStep] = useState(1);
+  const [giveCards, setGiveCards] = useState([]);
+  const [giveView, setGiveView] = useState("category");
+  const [giveCategory, setGiveCategory] = useState(null);
+  const [wantCategory, setWantCategory] = useState(null);
+  const [wantCard, setWantCard] = useState(null);
+  const [wantSubStep, setWantSubStep] = useState(1);
+  const [exCode, setExCode] = useState("");
+  const [exDone, setExDone] = useState(false);
+
+  // Find state
+  const [findMode, setFindMode] = useState(null);
+  const [findModeForFind, setFindModeForFind] = useState("need");
+  const [findModeForDonate, setFindModeForDonate] = useState("have");
+  const [findStep, setFindStep] = useState(1);
+  const [findCategory, setFindCategory] = useState(null);
+  const [findCard, setFindCard] = useState(null);
+  const [findResult, setFindResult] = useState(null);
+  const [findLoading, setFindLoading] = useState(false);
+
+  // Donation listing state
+  const [donateStep, setDonateStep] = useState("idle");
+  const [donorUsername, setDonorUsername] = useState("");
+  const [donateCard, setDonateCard] = useState(null);
+  const [donateQuantity, setDonateQuantity] = useState(1);
+  const [donateListedCount, setDonateListedCount] = useState(0);
+  const [donateLoading, setDonateLoading] = useState(false);
+
+  // Claim code state
+  const [claimStep, setClaimStep] = useState("idle");
+  const [claimCode, setClaimCode] = useState("");
+  const [claimListingId, setClaimListingId] = useState(null);
+  const [claimLoading, setClaimLoading] = useState(false);
+
+  // Home check donations state
+  const [checkUsername, setCheckUsername] = useState("");
+  const [checkResults, setCheckResults] = useState(null);
+  const [checkLoading, setCheckLoading] = useState(false);
+
+  const resetExchange = () => {
+    setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
+    setWantCategory(null); setWantCard(null); setWantSubStep(1);
+    setExCode(""); setExDone(false);
+  };
+
+  const resetFind = () => {
+    setFindMode(null); setFindStep(1);
+    setFindCategory(null); setFindCard(null);
+    setFindResult(null); setFindLoading(false);
+    setDonateStep("idle"); setDonorUsername(""); setDonateCard(null); setDonateQuantity(1); setDonateListedCount(0);
+    setClaimStep("idle"); setClaimCode(""); setClaimListingId(null);
+  };
+
+  const handleExSubmit = async () => {
+    if (exCode.length < 7) return;
+    const { error } = await supabase.from("listings").insert([{
+      give_card: giveCards.join(" | "), want_card: wantCard,
+      code: exCode, status: "available", type: "exchange",
+    }]);
+    if (!error) setExDone(true);
+    else alert("Error saving listing. Try again.");
+  };
+
+  const handleFindCardSelect = async (card) => {
+    const cardName = getCardName(card);
+    setFindCard(cardName); setFindStep(3);
+    setFindLoading(true); setFindResult(null);
+    const cutoff = getCutoff();
+    if (findMode === "need") {
+      const { data: exchangeData } = await supabase.from("listings").select("*")
+        .eq("give_card", cardName).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
+      const { data: donationData } = await supabase.from("listings").select("*")
+        .eq("give_card", cardName).eq("status", "available").eq("type", "donation")
+        .is("claim_code", null).gte("created_at", cutoff);
+      setFindResult({
+        available: (exchangeData && exchangeData.length > 0) || (donationData && donationData.length > 0),
+        listings: exchangeData || [],
+        donations: donationData || [],
+      });
+    } else {
+      const { data } = await supabase.from("listings").select("*")
+        .eq("want_card", cardName).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
+      if (data && data.length > 0) {
+        setFindResult({ searching: true, listings: data, cardToList: cardName });
+      } else {
+        setFindResult({ searching: false, cardToList: cardName });
+      }
+    }
+    setFindLoading(false);
+  };
+
+  const handleDonateList = async () => {
+    if (!isValidUsername(donorUsername)) return alert('Invalid username. Use 3-20 characters: letters, numbers, _ or -');
+    if (!donateCard) return alert('No card selected');
+    setDonateLoading(true);
+    try {
+      const rows = Array.from({ length: donateQuantity }, () => ({
+        give_card: donateCard, want_card: null,
+        code: null, status: "available",
+        type: "donation", donor_username: normalizeUsername(donorUsername),
+      }));
+      const { error } = await supabase.from("listings").insert(rows);
+      setDonateLoading(false);
+      if (!error) {
+        setDonateListedCount(donateQuantity);
+        setDonateStep("done");
+      } else {
+        alert("Error listing donation. Try again.");
+      }
+    } catch (err) {
+      setDonateLoading(false);
+      alert('Unexpected error while listing donation');
+    }
+  };
+
+  const handleClaimDonation = async () => {
+    if (claimCode.length < 7) return;
+    setClaimLoading(true);
+    const { error } = await supabase.from("listings")
+      .update({ claim_code: claimCode })
+      .eq("id", claimListingId);
+    setClaimLoading(false);
+    if (!error) setClaimStep("done");
+    else alert("Error. Try again.");
+  };
+
+  const handleMarkDone = async (id) => {
+    await supabase.from("listings").update({ status: "done" }).eq("id", id);
+    setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done" } : item) : prev);
+  };
+
+  const handleCheckDonations = async () => {
+    if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
+    setCheckLoading(true);
+    const { data } = await supabase.from("listings").select("*")
+      .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
+    const grouped = Object.values(
+  (data || []).reduce((acc, item) => {
+    const key = item.give_card + "_" + (item.claim_code || "none");
+    if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+    acc[key].quantity += 1;
+    return acc;
+  }, {})
+);
+setCheckResults(grouped);
+    setCheckLoading(false);
+  };
+
+  // Determine which nav item is active based on URL
+  const path = location.pathname;
+  const getNavActive = (id) => {
+    if (id === "home") return path === "/" || path === "/check";
+    if (id === "trade") return path === "/exchange" || path === "/finddonate";
+    if (id === "stock") return path === "/stock";
+    return false;
+  };
+
+  return (
+    <div style={s.app}>
       <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
-      
-      <div style={styles.header}>
-        <div style={styles.logo}>🃏</div>
+      <div style={s.header}>
+        <div style={{ ...s.logo, cursor: "pointer" }} onClick={() => navigate("/home")}>🃏</div>
         <div>
-          <div style={styles.headerTitle}>BGMIcards Portal</div>
-          <div style={styles.headerSub}>r/BGMIcards • Card Exchange</div>
+          <div style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px" }}>BGMIcards <span style={{ color:"#ff4500"}}>Portal</span></div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 1 }}>r/BGMIcards • Card Exchange</div>
+          </div>
         </div>
       </div>
 
-      <div style={styles.content}>
-        {activeTab === "home" && <HomeScreen />}
-        {activeTab === "trade" && (
-          <>
-            <div style={styles.subTabRow}>
-              <button style={styles.subTab(tradeSubTab === "exchange")} onClick={() => { setTradeSubTab("exchange"); resetExchange(); }}>Exchange</button>
-              <button style={styles.subTab(tradeSubTab === "find")} onClick={() => { setTradeSubTab("find"); resetFind(); }}>Find Code</button>
-            </div>
-            {tradeSubTab === "exchange" ? <ExchangeScreen /> : <FindScreen />}
-          </>
-        )}
-        {activeTab === "offers" && <OffersScreen />}
-        {activeTab === "profile" && (
-          <div style={{ textAlign: "center", paddingTop: 40, color: "#8b949e" }}>
-            <div style={{ fontSize: 40, marginBottom: 12 }}>👤</div>
-            <div style={{ fontSize: 14 }}>Profile coming soon</div>
-          </div>
-        )}
+      <div style={s.content}>
+        <Routes>
+          <Route path="/home" element={
+            <HomeScreen
+              checkUsername={checkUsername}
+              setCheckUsername={setCheckUsername}
+              checkLoading={checkLoading}
+              checkResults={checkResults}
+              handleCheckDonations={handleCheckDonations}
+              handleMarkDone={handleMarkDone}
+            />
+          } />
+          <Route path="/check" element={<CheckDonationsPage />} />
+          <Route path="/exchange" element={
+            <ExchangeScreen
+              exStep={exStep} setExStep={setExStep}
+              giveCards={giveCards} setGiveCards={setGiveCards}
+              giveView={giveView} setGiveView={setGiveView}
+              giveCategory={giveCategory} setGiveCategory={setGiveCategory}
+              wantCategory={wantCategory} setWantCategory={setWantCategory}
+              wantCard={wantCard} setWantCard={setWantCard}
+              wantSubStep={wantSubStep} setWantSubStep={setWantSubStep}
+              exCode={exCode} setExCode={setExCode}
+              exDone={exDone}
+              resetExchange={resetExchange}
+              handleExSubmit={handleExSubmit}
+            />
+          } />
+          <Route path="/finddonate" element={
+                              <FindScreen
+                                    findMode={findMode} setFindMode={setFindMode}
+                                    findStep={findStep} setFindStep={setFindStep}
+                                    findCategory={findCategory} setFindCategory={setFindCategory}
+                                    findCard={findCard} setFindCard={setFindCard}
+                                    findResult={findResult} setFindResult={setFindResult}
+                                   findLoading={findLoading} setFindLoading={setFindLoading}
+                                   donateStep={donateStep} setDonateStep={setDonateStep}
+                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+                                   donateCard={donateCard} setDonateCard={setDonateCard}
+                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+                                   donateListedCount={donateListedCount}
+                                   donateLoading={donateLoading}
+                                   claimStep={claimStep} setClaimStep={setClaimStep}
+                                   claimCode={claimCode} setClaimCode={setClaimCode}
+                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+                                   claimLoading={claimLoading}
+                                   resetFind={resetFind}
+                                   handleDonateList={handleDonateList}
+                                   handleClaimDonation={handleClaimDonation}
+                                   handleFindCardSelect={handleFindCardSelect}
+                                   handleMarkDone={handleMarkDone}
+                              />
+                           } />
+           <Route path="/find" element={
+            <FindScreen
+              defaultMode="need"
+                                   findMode={findModeForFind} setFindMode={setFindModeForFind}
+                                   findStep={findStep} setFindStep={setFindStep}
+                                   findCategory={findCategory} setFindCategory={setFindCategory}
+                                   findCard={findCard} setFindCard={setFindCard}
+                                   findResult={findResult} setFindResult={setFindResult}
+                                   findLoading={findLoading} setFindLoading={setFindLoading}
+                                   donateStep={donateStep} setDonateStep={setDonateStep}
+                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+                                   donateCard={donateCard} setDonateCard={setDonateCard}
+                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+                                   donateListedCount={donateListedCount}
+                                   donateLoading={donateLoading}
+                                   claimStep={claimStep} setClaimStep={setClaimStep}
+                                   claimCode={claimCode} setClaimCode={setClaimCode}
+                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+                                   claimLoading={claimLoading}
+                                   resetFind={resetFind}
+                                   handleDonateList={handleDonateList}
+                                   handleClaimDonation={handleClaimDonation}
+                                   handleFindCardSelect={handleFindCardSelect}
+                                   handleMarkDone={handleMarkDone}
+            />
+          } />
+          <Route path="/donate" element={
+                              <FindScreen
+                                   defaultMode="have"
+                                   findMode={findModeForDonate} setFindMode={setFindModeForDonate}
+                                   findStep={findStep} setFindStep={setFindStep}
+                                   findCategory={findCategory} setFindCategory={setFindCategory}
+                                   findCard={findCard} setFindCard={setFindCard}
+                                   findResult={findResult} setFindResult={setFindResult}
+                                   findLoading={findLoading} setFindLoading={setFindLoading}
+                                   donateStep={donateStep} setDonateStep={setDonateStep}
+                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+                                   donateCard={donateCard} setDonateCard={setDonateCard}
+                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+                                   donateListedCount={donateListedCount}
+                                   donateLoading={donateLoading}
+                                   claimStep={claimStep} setClaimStep={setClaimStep}
+                                   claimCode={claimCode} setClaimCode={setClaimCode}
+                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+                                   claimLoading={claimLoading}
+                                   resetFind={resetFind}
+                                   handleDonateList={handleDonateList}
+                                   handleClaimDonation={handleClaimDonation}
+                                   handleFindCardSelect={handleFindCardSelect}
+                                   handleMarkDone={handleMarkDone}
+                             />
+                          } />
+          <Route path="/stock" element={<StockScreen />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="/" element={<Navigate to="/home" replace />} />
+                         <Route path="/rules" element={<RulesPage />} />
+        </Routes>
       </div>
 
-      <div style={styles.bottomNav}>
+      <div style={s.bottomNav}>
         {[
-          { id: "home", icon: "🏠", label: "Home" },
-          { id: "trade", icon: "⇅", label: "Trade" },
-          { id: "offers", icon: "📋", label: "Offers" },
-          { id: "profile", icon: "👤", label: "Profile" },
-        ].map(({ id, icon, label }) => (
-          <button key={id} style={styles.navItem(activeTab === id)} onClick={() => setActiveTab(id)}>
-            <span style={styles.navIcon}>{icon}</span>
+          { id: "home", icon: "🏠", label: "Home", path: "/home" },
+          { id: "trade", icon: "⇅", label: "Trade", path: "/exchange" },
+          { id: "stock", icon: "📦", label: "Stock", path: "/stock" },
+        ].map(({ id, icon, label, path: navPath }) => (
+          <button key={id} style={s.navItem(getNavActive(id))} onClick={() => navigate(navPath)}>
+            <span style={{ fontSize: 20 }}>{icon}</span>
             <span>{label}</span>
           </button>
         ))}
       </div>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <AppContent />
+    </BrowserRouter>
   );
 }
