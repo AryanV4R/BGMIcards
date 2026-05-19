@@ -6,6 +6,16 @@ const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkYnp6YnJ1c21qeXFmbG90YmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTE3OTIsImV4cCI6MjA5NDIyNzc5Mn0.P7ycuWMpez18pB0amWVZfrRqDuFaqp8V3ZkO_V-3i4s";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }) => (
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, }}>
+    {onBack ? (
+      <button style={{ background: "none", border: "none", color: "#fff", fontSize: 18, fontWeight: 800, cursor: "pointer", padding: "4px 0" }} onClick={onBack}>BACK</button>
+    ) : <div />}
+    {onNext ? (
+      <button style={{ background: "none", border: "none", color: nextDisabled ? "#555" : "#fff", fontSize: 18, fontWeight: 800, cursor: nextDisabled ? "not-allowed" : "pointer", padding: "4px 0" }} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
+    ) : <div />}
+  </div>
+);
 const CATEGORIES = [
   "Hero's Crown", "BLUE LOCK", "Soccer Celebration", "Playful Battleground 2.0", "Evolving Universe", "Jujutsu Kaisen", "Special", "Playful Battleground",
 ];
@@ -156,10 +166,10 @@ const isValidUsername = (u) => {
 const normalizeUsername = (u) => (u || "").trim().toLowerCase();
 
 const s = {
-  app: { background: "#0d1117", minHeight: "100vh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column", overflowX: "hidden" },
+  app: { background: "#0d1117", height: "100vh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column", overflowX: "hidden" },
   header: { background: "#161b22", borderBottom: "1px solid #21262d", padding: "14px 20px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 10 },
   logo: { width: 32, height: 32, background: "linear-gradient(135deg, #ff4500, #ff6534)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
-  content: { flex: 1, padding: "20px 24px 90px 24px", width: "100%", boxSizing: "border-box" },
+  content: { flex: 1, padding: "20px 24px 90px 24px", width: "100%", boxSizing: "border-box", overflowY: "auto" },
   bottomNav: { position: "fixed", bottom: 0, left: 0, width: "100%", background: "#161b22", borderTop: "1px solid #21262d", display: "flex", padding: "8px 0 12px" },
   navItem: (active) => ({ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "6px 0", color: active ? "#ff4500" : "#8b949e", fontSize: 10, fontWeight: active ? 700 : 400, border: "none", background: "none" }),
   card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" },
@@ -192,10 +202,10 @@ const CardList = ({ items, onSelect, hovered, setHovered }) => (
       return (
         <div
           key={key}
-          style={{ ...s.card, ...(hovered === key ? s.cardHover : {}), ...(getCardName(item) === "Coming Soon" ?{ opacity: 0.35, cursor: "not-allowed"} : {}) }}
+          style={{ ...s.card, ...(hovered === key ? s.cardHover : {}), ...(getCardName(item) === "Coming Soon" ? { opacity: 0.35, cursor: "not-allowed" } : {}) }}
           onMouseEnter={() => setHovered(key)}
           onMouseLeave={() => setHovered(null)}
-          onClick={() => { if (getCardName(item) !=="Coming Soon") onSelect(item); }}
+          onClick={() => { if (getCardName(item) !== "Coming Soon") onSelect(item); }}
         >
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center" }}>
@@ -203,7 +213,7 @@ const CardList = ({ items, onSelect, hovered, setHovered }) => (
                 {typeof item === "object" ? item.name : item}
                 {typeof item === "string" && NEW_CATEGORIES.includes(item) && (
                   <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
-  )}
+                )}
               </span>
               {typeof item === "object" && item.rarity && (
                 <span style={{
@@ -239,7 +249,7 @@ const HomeScreen = ({
         <div style={{ fontSize: 12, color: "#8b949e", marginTop: 4 }}>BGMI Card Exchange Community</div>
       </div>
 
-      <div style={s.sectionTitle}>Quick Actions</div>
+      <div style={s.sectionTitle}>Quick Access</div>
 
       <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
         <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
@@ -252,7 +262,7 @@ const HomeScreen = ({
         <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
           onClick={() => navigate("/finddonate")}>
           <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards & Donate Extras</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards & Donate Cards</div>
           <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Browse offers</div>
         </div>
       </div>
@@ -315,6 +325,7 @@ const GiveCardStep = ({
   giveCategory, setGiveCategory,
   onProceed,
 }) => {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
   const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
 
@@ -355,15 +366,24 @@ const GiveCardStep = ({
         </div>
       )}
 
-      {giveCards.length > 0 && giveView === "category" && (
-        <button style={s.btn(false)} onClick={(e) => { e.stopPropagation(); onProceed(); }}>
-          Proceed with {giveCards.length} card{giveCards.length > 1 ? "s" : ""} — Next Step →
-        </button>
-      )}
+      
 
       {giveView === "category" && (
         <div style={{ marginTop: giveCards.length > 0 ? 20 : 0 }}>
-          <div style={s.sectionTitle}>{giveCards.length > 0 ? "Or add from another category:" : "Select Category"}</div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#ffffff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => navigate("/home")}>BACK</button>
+            <div style={s.sectionTitle}>{giveCards.length > 0 ? "Or add from another category:" : "Select Category"}</div>
+            {giveCards.length > 0 ? (
+              <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={onProceed}>NEXT</button>
+            ) : (
+              <button style={{ background: "transparent", border: "1px solid #555", color: "#555", fontSize: 14, fontWeight: 800, cursor: "not-allowed", padding: "6px 14px", borderRadius: 8 }} disabled>NEXT</button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {giveView === "category" && (
+        <div style={{ marginTop: 12 }}>
           {CATEGORIES.map(cat => (
             <div
               key={cat}
@@ -374,11 +394,11 @@ const GiveCardStep = ({
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <span style={{ fontSize: 14, fontWeight: 600 }}>
-  {cat}
-  {NEW_CATEGORIES.includes(cat) && (
-    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
-  )}
-</span>
+                  {cat}
+                  {NEW_CATEGORIES.includes(cat) && (
+                    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
+                  )}
+                </span>
                 <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
               </div>
             </div>
@@ -388,23 +408,20 @@ const GiveCardStep = ({
 
       {giveView === "cards" && (
         <div>
-          <div style={s.pageHeader}>
-            <button style={s.backBtn} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>‹ Back to Categories</button>
-            <div />
-          </div>
-          <div style={s.sectionTitle}>
-            {giveCategory}
-            {lockedRarity ? "  —  " + lockedRarity + " only" : "  —  tap to select"}
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>BACK</button>
+            <div style={s.sectionTitle}>{giveCategory}{lockedRarity ? "  —  " + lockedRarity + " only" : "  —  tap to select"}</div>
+            <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>DONE</button>
           </div>
           {(CARDS[giveCategory] || []).map((item) => {
             const cardName = getCardName(item);
             const cardRarity = getRarityByName(cardName);
             const isSelected = giveCards.includes(cardName);
             const isDisabled = !isSelected && (
-  cardName === "Coming Soon" ||
-  (lockedRarity && cardRarity !== lockedRarity) ||
-  giveCards.length >= 3
-);
+              cardName === "Coming Soon" ||
+              (lockedRarity && cardRarity !== lockedRarity) ||
+              giveCards.length >= 3
+            );
             return (
               <div
                 key={cardName}
@@ -435,9 +452,6 @@ const GiveCardStep = ({
               </div>
             );
           })}
-          <button style={s.btnSecondary} onClick={(e) => { e.stopPropagation(); setGiveView("category"); }}>
-            Done selecting from this category ✓
-          </button>
         </div>
       )}
     </div>
@@ -457,6 +471,7 @@ const ExchangeScreen = ({
   exDone,
   resetExchange, handleExSubmit,
 }) => {
+  const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
   const progressPct = exStep === 1 ? 33 : exStep === 2 ? 66 : 100;
   const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
@@ -507,10 +522,6 @@ const ExchangeScreen = ({
 
       {exStep === 2 && (
         <>
-          <div style={s.pageHeader}>
-            <button style={s.backBtn} onClick={() => { setExStep(1); setGiveView("category"); }}>‹ Back</button>
-            <div />
-          </div>
           <div style={s.stepLabel}>Step 2 of 3</div>
           <div style={s.stepTitle}>Want Card <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}>— which card do you need?</span></div>
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 10, padding: "10px 14px", marginBottom: 14 }}>
@@ -521,22 +532,26 @@ const ExchangeScreen = ({
           </div>
           {wantSubStep === 1 && (
             <>
-              <div style={s.sectionTitle}>Select Category</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => { setExStep(1); setGiveView("category"); }}>BACK</button>
+                <div style={s.sectionTitle}>Select Category</div>
+                <button style={{ background: "transparent", border: `1px solid ${wantCard ? "#ffffff" : "#555"}`, color: wantCard ? "#fff" : "#555", fontSize: 14, fontWeight: 800, cursor: wantCard ? "pointer" : "not-allowed", padding: "6px 14px", borderRadius: 8 }} onClick={() => { if (wantCard) setExStep(3);}}disabled={!wantCard}>NEXT</button>
+              </div>
               <CardList items={CATEGORIES} onSelect={cat => { setWantCategory(cat); setWantSubStep(2); }} hovered={hovered} setHovered={setHovered} />
             </>
           )}
           {wantSubStep === 2 && (
             <>
-              <div style={s.pageHeader}>
-                <button style={s.backBtn} onClick={() => setWantSubStep(1)}>‹ Back</button>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => setWantSubStep(1)}>BACK</button>
+                <div style={s.sectionTitle}>Select Card — <span style={{ color: "#58a6ff" }}>{wantCategory}</span></div>
                 <div />
               </div>
-              <div style={s.sectionTitle}>Select Card — <span style={{ color: "#58a6ff" }}>{wantCategory}</span></div>
               <CardList
-                items={(CARDS[wantCategory] || []).filter(c => !lockedRarity || c.rarity === lockedRarity)}
-                onSelect={card => { setWantCard(getCardName(card)); setExStep(3); }}
-                hovered={hovered} setHovered={setHovered}
-              />
+                items={(CARDS[wantCategory] || []).filter(c => !lockedRarity || c.rarity === lockedRarity).filter(c => !giveCards.includes(getCardName(c)))}
+  onSelect={card => { setWantCard(getCardName(card)); setExStep(3); }}
+  hovered={hovered} setHovered={setHovered}
+/>
             </>
           )}
         </>
@@ -544,14 +559,16 @@ const ExchangeScreen = ({
 
       {exStep === 3 && (
         <>
-          <button style={s.backBtn} onClick={() => { setExStep(2); setWantSubStep(2); }}>‹ Back</button>
           <div style={s.stepLabel}>Step 3 of 3</div>
-          <div style={s.stepTitle}>Enter Exchange Code</div>
+<div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+  <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => { setExStep(2); setWantSubStep(2); }}>BACK</button>
+  <div style={{ ...s.stepTitle, marginBottom: 0, flex: 1, textAlign: "center", paddingRight: 60 }}>Enter Exchange Code</div>
+</div>
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16 }}>
-            <div style={{ marginBottom: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", }}>
               <span style={{ fontSize: 11, color: "#8b949e" }}>Giving</span>
               {giveCards.map((c, i) => (
-                <div key={i} style={{ fontSize: 13, fontWeight: 700, color: "#3fb950", marginTop: 2 }}>{c}</div>
+                <div key={i} style={{ fontSize: 13, fontWeight: 700, color: "#3fb950", marginTop: 1 }}>{c}</div>
               ))}
             </div>
             <div style={{ display: "flex", justifyContent: "space-between" }}>
@@ -597,7 +614,7 @@ const FindScreen = ({
 }) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
-    const groupedDonations = (findResult && findResult.donations) ? Object.values(
+  const groupedDonations = (findResult && findResult.donations) ? Object.values(
     (findResult.donations || []).reduce((acc, d) => {
       const key = d.donor_username || "unknown";
       if (!acc[key]) acc[key] = { donor_username: key, ids: [], count: 0 };
@@ -609,13 +626,17 @@ const FindScreen = ({
 
   if (!findMode) return (
     <>
-      <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>How would you like to search?</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+  <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+    onClick={() => navigate("/home")}>BACK</button>
+  <div style={{ flex: 1, textAlign: "center",fontSize: 13, color: "#8b949e" }}>How would you like to search?</div>
+</div>
       <div style={{ ...s.findModeCard, ...(hovered === "need" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
         onMouseEnter={() => setHovered("need")} onMouseLeave={() => setHovered(null)}
         onClick={() => { setFindMode("need"); setFindStep(1); navigate("/find"); }}>
         <div style={s.findModeIcon("rgba(255,69,0,0.2)")}>🔍</div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I need a specific card</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
           <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players offering the card you want</div>
         </div>
         <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
@@ -625,7 +646,7 @@ const FindScreen = ({
         onClick={() => { setFindMode("have"); setFindStep(1); navigate("/donate"); }}>
         <div style={s.findModeIcon("rgba(88,166,255,0.15)")}>💎</div>
         <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>I have a card to Donate</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Donate Cards</div>
           <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players looking for your card</div>
         </div>
         <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
@@ -798,39 +819,49 @@ const FindScreen = ({
 
   return (
     <>
-      <div style={s.pageHeader}>
-        <button style={s.backBtn} onClick={findStep === 1 ? () => { resetFind(); navigate("/finddonate"); } : () => setFindStep(1)}>‹ Back</button>
-        <div />
-      </div>
-      <div style={s.progressBar}><div style={s.progressFill(findStep === 1 ? 50 : 100)} /></div>
       {findStep === 1 && (
-        <>
-          <div style={s.stepLabel}>Step 1 of 2</div>
-          <div style={s.stepTitle}>Select Category</div>
-          <CardList items={CATEGORIES} onSelect={cat => { setFindCategory(cat); setFindStep(2); }} hovered={hovered} setHovered={setHovered} />
-        </>
-      )}
+  <>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+        onClick={() => { resetFind(); navigate("/finddonate"); }}>BACK</button>
+      <div style={s.stepLabel}>Step 1 of 2</div>
+      <button style={{ background: "transparent", border: `1px solid ${findCategory ? "#ffffff" : "#555"}`, color: findCategory ? "#fff" : "#555", fontSize: 14, fontWeight: 800, cursor: findCategory ? "pointer" : "not-allowed", padding: "6px 14px", borderRadius: 8 }}
+        onClick={() => { if (findCategory) setFindStep(2); }} disabled={!findCategory}>NEXT</button>
+    </div>
+    <div style={s.stepTitle}>Select Category</div>
+    <CardList items={CATEGORIES} onSelect={cat => { setFindCategory(cat); setFindStep(2); }} hovered={hovered} setHovered={setHovered} />
+  </>
+)}
       {findStep === 2 && (
-        <>
-          <div style={s.stepLabel}>Step 2 of 2</div>
-          <div style={s.stepTitle}>Select Card — <span style={{ color: "#ff4500" }}>{findCategory}</span></div>
-          <CardList items={CARDS[findCategory] || []} onSelect={handleFindCardSelect} hovered={hovered} setHovered={setHovered} />
-        </>
-      )}
+  <>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+      <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+        onClick={() => setFindStep(1)}>BACK</button>
+      <div style={s.stepLabel}>Step 2 of 2</div>
+      <div style={{ width: 74 }} />
+    </div>
+    <div style={s.stepTitle}>Select Card — <span style={{ color: "#ff4500" }}>{findCategory}</span></div>
+    <CardList items={CARDS[findCategory] || []} onSelect={handleFindCardSelect} hovered={hovered} setHovered={setHovered} />
+  </>
+)}
       {findStep === 3 && (
-        <>
-          <div style={s.pageHeader}>
-            <div />
-            <button style={s.topRightBackBtn} onClick={resetFind}>‹ Back to Search</button>
-          </div>
-          <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 4 }}>Result for</div>
-          <div style={{ fontSize: 17, fontWeight: 800, color: "#ff4500", marginBottom: 16 }}>{findCard}</div>
-          {findStepContent}
-        </>
-      )}
+  <>
+    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+      <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+        onClick={() => setFindStep(2)}>BACK</button>
+      <div style={{ flex: 1, textAlign: "center", fontSize: 13, color: "#8b949e" }}>
+    Result for <span style={{ color: "#ff4500", fontWeight: 800 }}>{findCard}</span></div>
+    <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+    onClick={() => { resetFind(); navigate("/finddonate"); }}>HOME</button>
+    </div>
+    {findStepContent}
+  </>
+)}
     </>
   );
 };
+
+// ─── RulesPage ────────────────────────────────────────────────────────────────
 const RulesPage = () => (
   <div>
     <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>📋 Trade <span style={{ color: "#ff4500" }}>Rules</span></div>
@@ -850,6 +881,7 @@ const RulesPage = () => (
     ))}
   </div>
 );
+
 // ─── StockScreen ──────────────────────────────────────────────────────────────
 const StockScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -885,11 +917,11 @@ const StockScreen = () => {
           onClick={() => fetchStock(cat)}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <span style={{ fontSize: 14, fontWeight: 600 }}>
-  {cat}
-  {NEW_CATEGORIES.includes(cat) && (
-    <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
-  )}
-</span>
+              {cat}
+              {NEW_CATEGORIES.includes(cat) && (
+                <span style={{ marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#fff", background: "#ff4500", borderRadius: 4, padding: "2px 6px" }}>NEW</span>
+              )}
+            </span>
             <span style={{ color: "#8b949e", fontSize: 18 }}>›</span>
           </div>
         </div>
@@ -944,14 +976,15 @@ const CheckDonationsPage = () => {
     const { data } = await supabase.from("listings").select("*")
       .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
     const grouped = Object.values(
-  (data || []).reduce((acc, item) => {
-    const key = item.give_card + "_" + (item.claim_code || "none");
-    if (!acc[key]) acc[key] = { ...item, quantity: 0 };
-    acc[key].quantity += 1;
-    return acc;
-  }, {})
-);
-setCheckResults(grouped);    setCheckLoading(false);
+      (data || []).reduce((acc, item) => {
+        const key = item.give_card + "_" + (item.claim_code || "none");
+        if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+        acc[key].quantity += 1;
+        return acc;
+      }, {})
+    );
+    setCheckResults(grouped);
+    setCheckLoading(false);
   };
 
   const handleMarkDone = async (id) => {
@@ -1147,18 +1180,17 @@ function AppContent() {
     const { data } = await supabase.from("listings").select("*")
       .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
     const grouped = Object.values(
-  (data || []).reduce((acc, item) => {
-    const key = item.give_card + "_" + (item.claim_code || "none");
-    if (!acc[key]) acc[key] = { ...item, quantity: 0 };
-    acc[key].quantity += 1;
-    return acc;
-  }, {})
-);
-setCheckResults(grouped);
+      (data || []).reduce((acc, item) => {
+        const key = item.give_card + "_" + (item.claim_code || "none");
+        if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+        acc[key].quantity += 1;
+        return acc;
+      }, {})
+    );
+    setCheckResults(grouped);
     setCheckLoading(false);
   };
 
-  // Determine which nav item is active based on URL
   const path = location.pathname;
   const getNavActive = (id) => {
     if (id === "home") return path === "/" || path === "/check";
@@ -1174,7 +1206,7 @@ setCheckResults(grouped);
         <div style={{ ...s.logo, cursor: "pointer" }} onClick={() => navigate("/home")}>🃏</div>
         <div>
           <div style={{ cursor: "pointer" }} onClick={() => navigate("/home")}>
-            <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px" }}>BGMIcards <span style={{ color:"#ff4500"}}>Portal</span></div>
+            <div style={{ fontSize: 17, fontWeight: 700, color: "#fff", letterSpacing: "-0.3px" }}>BGMIcards <span style={{ color: "#ff4500" }}>Portal</span></div>
             <div style={{ fontSize: 11, color: "#8b949e", marginTop: 1 }}>r/BGMIcards • Card Exchange</div>
           </div>
         </div>
@@ -1209,86 +1241,86 @@ setCheckResults(grouped);
             />
           } />
           <Route path="/finddonate" element={
-                              <FindScreen
-                                    findMode={findMode} setFindMode={setFindMode}
-                                    findStep={findStep} setFindStep={setFindStep}
-                                    findCategory={findCategory} setFindCategory={setFindCategory}
-                                    findCard={findCard} setFindCard={setFindCard}
-                                    findResult={findResult} setFindResult={setFindResult}
-                                   findLoading={findLoading} setFindLoading={setFindLoading}
-                                   donateStep={donateStep} setDonateStep={setDonateStep}
-                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
-                                   donateCard={donateCard} setDonateCard={setDonateCard}
-                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
-                                   donateListedCount={donateListedCount}
-                                   donateLoading={donateLoading}
-                                   claimStep={claimStep} setClaimStep={setClaimStep}
-                                   claimCode={claimCode} setClaimCode={setClaimCode}
-                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
-                                   claimLoading={claimLoading}
-                                   resetFind={resetFind}
-                                   handleDonateList={handleDonateList}
-                                   handleClaimDonation={handleClaimDonation}
-                                   handleFindCardSelect={handleFindCardSelect}
-                                   handleMarkDone={handleMarkDone}
-                              />
-                           } />
-           <Route path="/find" element={
+            <FindScreen
+              findMode={findMode} setFindMode={setFindMode}
+              findStep={findStep} setFindStep={setFindStep}
+              findCategory={findCategory} setFindCategory={setFindCategory}
+              findCard={findCard} setFindCard={setFindCard}
+              findResult={findResult} setFindResult={setFindResult}
+              findLoading={findLoading} setFindLoading={setFindLoading}
+              donateStep={donateStep} setDonateStep={setDonateStep}
+              donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+              donateCard={donateCard} setDonateCard={setDonateCard}
+              donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+              donateListedCount={donateListedCount}
+              donateLoading={donateLoading}
+              claimStep={claimStep} setClaimStep={setClaimStep}
+              claimCode={claimCode} setClaimCode={setClaimCode}
+              claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+              claimLoading={claimLoading}
+              resetFind={resetFind}
+              handleDonateList={handleDonateList}
+              handleClaimDonation={handleClaimDonation}
+              handleFindCardSelect={handleFindCardSelect}
+              handleMarkDone={handleMarkDone}
+            />
+          } />
+          <Route path="/find" element={
             <FindScreen
               defaultMode="need"
-                                   findMode={findModeForFind} setFindMode={setFindModeForFind}
-                                   findStep={findStep} setFindStep={setFindStep}
-                                   findCategory={findCategory} setFindCategory={setFindCategory}
-                                   findCard={findCard} setFindCard={setFindCard}
-                                   findResult={findResult} setFindResult={setFindResult}
-                                   findLoading={findLoading} setFindLoading={setFindLoading}
-                                   donateStep={donateStep} setDonateStep={setDonateStep}
-                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
-                                   donateCard={donateCard} setDonateCard={setDonateCard}
-                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
-                                   donateListedCount={donateListedCount}
-                                   donateLoading={donateLoading}
-                                   claimStep={claimStep} setClaimStep={setClaimStep}
-                                   claimCode={claimCode} setClaimCode={setClaimCode}
-                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
-                                   claimLoading={claimLoading}
-                                   resetFind={resetFind}
-                                   handleDonateList={handleDonateList}
-                                   handleClaimDonation={handleClaimDonation}
-                                   handleFindCardSelect={handleFindCardSelect}
-                                   handleMarkDone={handleMarkDone}
+              findMode={findModeForFind} setFindMode={setFindModeForFind}
+              findStep={findStep} setFindStep={setFindStep}
+              findCategory={findCategory} setFindCategory={setFindCategory}
+              findCard={findCard} setFindCard={setFindCard}
+              findResult={findResult} setFindResult={setFindResult}
+              findLoading={findLoading} setFindLoading={setFindLoading}
+              donateStep={donateStep} setDonateStep={setDonateStep}
+              donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+              donateCard={donateCard} setDonateCard={setDonateCard}
+              donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+              donateListedCount={donateListedCount}
+              donateLoading={donateLoading}
+              claimStep={claimStep} setClaimStep={setClaimStep}
+              claimCode={claimCode} setClaimCode={setClaimCode}
+              claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+              claimLoading={claimLoading}
+              resetFind={resetFind}
+              handleDonateList={handleDonateList}
+              handleClaimDonation={handleClaimDonation}
+              handleFindCardSelect={handleFindCardSelect}
+              handleMarkDone={handleMarkDone}
             />
           } />
           <Route path="/donate" element={
-                              <FindScreen
-                                   defaultMode="have"
-                                   findMode={findModeForDonate} setFindMode={setFindModeForDonate}
-                                   findStep={findStep} setFindStep={setFindStep}
-                                   findCategory={findCategory} setFindCategory={setFindCategory}
-                                   findCard={findCard} setFindCard={setFindCard}
-                                   findResult={findResult} setFindResult={setFindResult}
-                                   findLoading={findLoading} setFindLoading={setFindLoading}
-                                   donateStep={donateStep} setDonateStep={setDonateStep}
-                                   donorUsername={donorUsername} setDonorUsername={setDonorUsername}
-                                   donateCard={donateCard} setDonateCard={setDonateCard}
-                                   donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
-                                   donateListedCount={donateListedCount}
-                                   donateLoading={donateLoading}
-                                   claimStep={claimStep} setClaimStep={setClaimStep}
-                                   claimCode={claimCode} setClaimCode={setClaimCode}
-                                   claimListingId={claimListingId} setClaimListingId={setClaimListingId}
-                                   claimLoading={claimLoading}
-                                   resetFind={resetFind}
-                                   handleDonateList={handleDonateList}
-                                   handleClaimDonation={handleClaimDonation}
-                                   handleFindCardSelect={handleFindCardSelect}
-                                   handleMarkDone={handleMarkDone}
-                             />
-                          } />
+            <FindScreen
+              defaultMode="have"
+              findMode={findModeForDonate} setFindMode={setFindModeForDonate}
+              findStep={findStep} setFindStep={setFindStep}
+              findCategory={findCategory} setFindCategory={setFindCategory}
+              findCard={findCard} setFindCard={setFindCard}
+              findResult={findResult} setFindResult={setFindResult}
+              findLoading={findLoading} setFindLoading={setFindLoading}
+              donateStep={donateStep} setDonateStep={setDonateStep}
+              donorUsername={donorUsername} setDonorUsername={setDonorUsername}
+              donateCard={donateCard} setDonateCard={setDonateCard}
+              donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
+              donateListedCount={donateListedCount}
+              donateLoading={donateLoading}
+              claimStep={claimStep} setClaimStep={setClaimStep}
+              claimCode={claimCode} setClaimCode={setClaimCode}
+              claimListingId={claimListingId} setClaimListingId={setClaimListingId}
+              claimLoading={claimLoading}
+              resetFind={resetFind}
+              handleDonateList={handleDonateList}
+              handleClaimDonation={handleClaimDonation}
+              handleFindCardSelect={handleFindCardSelect}
+              handleMarkDone={handleMarkDone}
+            />
+          } />
           <Route path="/stock" element={<StockScreen />} />
-          <Route path="*" element={<Navigate to="/home" replace />} />
+          <Route path="/rules" element={<RulesPage />} />
           <Route path="/" element={<Navigate to="/home" replace />} />
-                         <Route path="/rules" element={<RulesPage />} />
+          <Route path="*" element={<Navigate to="/home" replace />} />
         </Routes>
       </div>
 
