@@ -17,9 +17,9 @@ const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }
   </div>
 );
 const CATEGORIES = [
-  "Hero's Crown", "BLUE LOCK", "Soccer Celebration", "Playful Battleground 2.0", "Evolving Universe", "Jujutsu Kaisen", "Special", "Playful Battleground",
+  "Hero's Crown", "BLUE LOCK", "Gourmet Tour - Middle East", "Playful Battleground 2.0", "Evolving Universe", "Jujutsu Kaisen", "Special", "Playful Battleground",
 ];
-const NEW_CATEGORIES = ["Hero's Crown", "BLUE LOCK", "Soccer Celebration", "Playful Battleground 2.0"];
+const NEW_CATEGORIES = ["Hero's Crown", "BLUE LOCK", "Gourmet Tour - Middle East", "Playful Battleground 2.0"];
 const CARDS = {
   "Hero's Crown": [
     { name: "Achilles' Phantom", rarity: "Golden" },
@@ -56,26 +56,29 @@ const CARDS = {
     { name: "Prison Shackles", rarity: "Grey" },
     { name: "Soccer Ball Ornament", rarity: "Grey" },
   ],
-  "Soccer Celebration": [
-    { name: "Coming Soon", rarity: "Golden" },
-    { name: "Coming Soon", rarity: "Golden" },
-    { name: "Coming Soon", rarity: "Golden" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
+  "Gourmet Tour - Middle East": [
+    { name: "Kabsa", rarity: "Golden" },
+    { name: "Dolma", rarity: "Golden" },
+    { name: "Kharouf Mashwi", rarity: "Golden" },
+    { name: "Kebdah", rarity: "Blue" },
+    { name: "Ra's kharoof", rarity: "Blue" },
+    { name: "Mashawi Mshakal", rarity: "Blue" },
+    { name: "Malfouf", rarity: "Blue" },
+    { name: "Hummus with Spiced Meat", rarity: "Blue" },
+    { name: "Mandi", rarity: "Blue" },
+    { name: "Fattah", rarity: "Grey" },
+    { name: "Shish Kebab", rarity: "Grey" },
+    { name: "Kofta", rarity: "Grey" },
+    { name: "Mansaf", rarity: "Grey" },
+    { name: "Couscous", rarity: "Grey" },
+    { name: "Kibbeh", rarity: "Grey" },
+    { name: "Ma'amul", rarity: "Grey" },
+    { name: "Kunafa", rarity: "Grey" },
+    { name: "Baklava", rarity: "Grey" },
+    { name: "Tabbouleh", rarity: "Grey" },
+    { name: "Rish Kharouf", rarity: "Grey" },
   ],
   "Playful Battleground 2.0": [
-    { name: "Coming Soon", rarity: "Golden" },
     { name: "Coming Soon", rarity: "Golden" },
     { name: "Ford Mustang GTD", rarity: "Golden" },
     { name: "Ford F-150 Raptor", rarity: "Golden" },
