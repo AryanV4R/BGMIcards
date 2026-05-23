@@ -254,22 +254,38 @@ const HomeScreen = ({
 
       <div style={s.sectionTitle}>Quick Access</div>
 
-      <div style={{ display: "flex", gap: 10, marginBottom: 24 }}>
-        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-          onClick={() => navigate("/exchange")}>
-          <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange</div>
-          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your card</div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/exchange")}>
+            <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your card for exchange</div>
+          </div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/find")}>
+            <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Find players offering your card</div>
+          </div>
         </div>
-
-        <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-          onClick={() => navigate("/finddonate")}>
-          <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards & Donate Cards</div>
-          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Browse offers</div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/donate")}>
+            <div style={{ width: 44, height: 44, background: "rgba(35,134,54,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🎁</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Donate Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your extra cards</div>
+          </div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/check")}>
+            <div style={{ width: 44, height: 44, background: "rgba(240,136,62,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>📋</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>My Donations</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Check your donations</div>
+          </div>
         </div>
       </div>
-
+      
+      {false && (
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16 }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4 }}>🎁 Check My Donations</div>
         <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 12 }}>Enter your Reddit Username / Custom Username to see if someone needs your donated card.</div>
@@ -311,6 +327,7 @@ const HomeScreen = ({
           </div>
         )}
       </div>
+      )}
 
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
         <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 6 }}>📌 Subreddit</div>
@@ -627,23 +644,8 @@ const FindScreen = ({
     }, {})
   ) : [];
 
-  if (!findMode) return (
-    <>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-  <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
-    onClick={() => navigate("/home")}>BACK</button>
-  <div style={{ flex: 1, textAlign: "center",fontSize: 13, color: "#8b949e" }}>How would you like to search?</div>
-</div>
-      <div style={{ ...s.findModeCard, ...(hovered === "need" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
-        onMouseEnter={() => setHovered("need")} onMouseLeave={() => setHovered(null)}
-        onClick={() => { setFindMode("need"); setFindStep(1); navigate("/find"); }}>
-        <div style={s.findModeIcon("rgba(255,69,0,0.2)")}>🔍</div>
-        <div>
-          <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
-          <div style={{ fontSize: 12, color: "#8b949e", marginTop: 3 }}>Find players offering the card you want</div>
-        </div>
-        <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
-      </div>
+  
+      {false && (
       <div style={{ ...s.findModeCard, ...(hovered === "have" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
         onMouseEnter={() => setHovered("have")} onMouseLeave={() => setHovered(null)}
         onClick={() => { setFindMode("have"); setFindStep(1); navigate("/donate"); }}>
@@ -654,18 +656,21 @@ const FindScreen = ({
         </div>
         <span style={{ color: "#8b949e", fontSize: 18, marginLeft: "auto" }}>›</span>
       </div>
-    </>
-  );
+    )}
 
   if (donateStep === "username") return (
-    <div style={{ position: "relative" }}>
-      <button style={s.topRightBackBtn} onClick={() => setDonateStep("idle")}>← Back to search</button>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>List as Donation</div>
+    <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+        <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+          onClick={() => setDonateStep("idle")}>BACK</button>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>List as Donation</div>
+        <div style={{ width: 74 }} />
+      </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{donateCard}</span></div>
-      <div style={{ display: "flex", gap: 10, marginBottom: 12, alignItems: "center" }}>
-        <div style={{ flex: 1, fontSize: 13, color: "#8b949e" }}>How many copies do you want to donate?</div>
+      <div style={{ marginBottom: 12 }}>
+        <div style={{ fontSize: 13, color: "#8b949e", textAlign: "center", marginBottom: 10 }}>How many copies do you want to donate?</div>
         <select
-          style={{ ...s.input, maxWidth: 120, padding: "12px 10px" }}
+          style={{ ...s.input, padding: "12px 10px", textAlign: "center" }}
           value={donateQuantity}
           onChange={e => setDonateQuantity(Number(e.target.value))}
         >
@@ -824,14 +829,13 @@ const FindScreen = ({
     <>
       {findStep === 1 && (
   <>
-    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
       <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
-        onClick={() => { resetFind(); navigate("/finddonate"); }}>BACK</button>
-      <div style={s.stepLabel}>Step 1 of 2</div>
+        onClick={() => { resetFind(); navigate("/home"); }}>BACK</button>
+      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Select Category</div>
       <button style={{ background: "transparent", border: `1px solid ${findCategory ? "#ffffff" : "#555"}`, color: findCategory ? "#fff" : "#555", fontSize: 14, fontWeight: 800, cursor: findCategory ? "pointer" : "not-allowed", padding: "6px 14px", borderRadius: 8 }}
         onClick={() => { if (findCategory) setFindStep(2); }} disabled={!findCategory}>NEXT</button>
     </div>
-    <div style={s.stepTitle}>Select Category</div>
     <CardList items={CATEGORIES} onSelect={cat => { setFindCategory(cat); setFindStep(2); }} hovered={hovered} setHovered={setHovered} />
   </>
 )}
@@ -844,7 +848,7 @@ const FindScreen = ({
       <div style={{ width: 74 }} />
     </div>
     <div style={s.stepTitle}>Select Card — <span style={{ color: "#ff4500" }}>{findCategory}</span></div>
-    <CardList items={CARDS[findCategory] || []} onSelect={handleFindCardSelect} hovered={hovered} setHovered={setHovered} />
+    <CardList items={CARDS[findCategory] || []} onSelect={card => handleFindCardSelect(card, findMode)} hovered={hovered} setHovered={setHovered} />
   </>
 )}
       {findStep === 3 && (
@@ -855,7 +859,7 @@ const FindScreen = ({
       <div style={{ flex: 1, textAlign: "center", fontSize: 13, color: "#8b949e" }}>
     Result for <span style={{ color: "#ff4500", fontWeight: 800 }}>{findCard}</span></div>
     <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
-    onClick={() => { resetFind(); navigate("/finddonate"); }}>HOME</button>
+    onClick={() => { resetFind(); navigate("/find"); }}>HOME</button>
     </div>
     {findStepContent}
   </>
@@ -899,7 +903,7 @@ const StockScreen = () => {
     for (const card of (CARDS[category] || [])) {
       const cardName = getCardName(card);
       const { count } = await supabase.from("listings").select("*", { count: "exact", head: true })
-        .eq("give_card", cardName).eq("status", "available").gte("created_at", cutoff);
+        .ilike("give_card", `%${cardName}%`).eq("status", "available").gte("created_at", cutoff);
       counts[cardName] = count || 0;
     }
     setStockData(counts); setLoading(false);
@@ -907,13 +911,17 @@ const StockScreen = () => {
 
   const cs = {
     card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer" },
-    backBtn: { background: "none", border: "none", color: "#8b949e", fontSize: 13, cursor: "pointer", padding: "0 0 16px" },
+    backBtn: { background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8, marginBottom: 16 },
   };
 
   if (!selectedCategory) return (
-    <div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>Stock</div>
-      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Check available cards for exchange</div>
+      <div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+          onClick={() => window.history.back()}>BACK</button>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Stock</div>
+        <div style={{ width: 74 }} />
+      </div>
       {CATEGORIES.map(cat => (
         <div key={cat} style={{ ...cs.card, ...(hovered === cat ? { background: "#1c2128", borderColor: "#ff4500" } : {}) }}
           onMouseEnter={() => setHovered(cat)} onMouseLeave={() => setHovered(null)}
@@ -934,11 +942,12 @@ const StockScreen = () => {
 
   return (
     <div>
-      <div style={s.pageHeader}>
-        <button style={cs.backBtn} onClick={() => { setSelectedCategory(null); setStockData({}); }}>‹ Back</button>
-        <div />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+        <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+          onClick={() => { setSelectedCategory(null); setStockData({}); }}>BACK</button>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>{selectedCategory}</div>
+        <div style={{ width: 74 }} />
       </div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>{selectedCategory}</div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Available listings (last 3 days)</div>
       {loading ? (
         <div style={{ textAlign: "center", color: "#8b949e", padding: 20 }}>Loading...</div>
@@ -972,6 +981,7 @@ const CheckDonationsPage = () => {
   const [checkUsername, setCheckUsername] = useState("");
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
+  const [adjustLoading, setAdjustLoading] = useState(null); // card name jo adjust ho raha hai
 
   const handleCheckDonations = async () => {
     if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
@@ -980,9 +990,10 @@ const CheckDonationsPage = () => {
       .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
     const grouped = Object.values(
       (data || []).reduce((acc, item) => {
-        const key = item.give_card + "_" + (item.claim_code || "none");
-        if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+        const key = item.give_card;
+        if (!acc[key]) acc[key] = { ...item, quantity: 0, ids: [] };
         acc[key].quantity += 1;
+        acc[key].ids.push(item.id); // saare ids store karo
         return acc;
       }, {})
     );
@@ -995,9 +1006,53 @@ const CheckDonationsPage = () => {
     setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done" } : item) : prev);
   };
 
+  const handleIncrease = async (item) => {
+    if (item.quantity >= 5) return;
+    setAdjustLoading(item.give_card);
+    const { error } = await supabase.from("listings").insert([{
+      give_card: item.give_card, want_card: null,
+      code: null, status: "available",
+      type: "donation", donor_username: normalizeUsername(checkUsername),
+    }]);
+    if (!error) {
+      setCheckResults(prev => prev.map(r =>
+        r.give_card === item.give_card ? { ...r, quantity: r.quantity + 1 } : r
+      ));
+    }
+    setAdjustLoading(null);
+  };
+
+  const handleDecrease = async (item) => {
+    if (item.quantity <= 0) return;
+    setAdjustLoading(item.give_card);
+    const idToRemove = item.ids[item.ids.length - 1]; // last id remove karo
+    if (item.quantity === 1) {
+      // 0 pe aa gaya — saari rows mark as done
+      await supabase.from("listings").update({ status: "done" })
+        .eq("give_card", item.give_card)
+        .eq("donor_username", normalizeUsername(checkUsername))
+        .eq("type", "donation")
+        .eq("status", "available");
+      setCheckResults(prev => prev.filter(r => r.give_card !== item.give_card));
+    } else {
+      await supabase.from("listings").update({ status: "done" }).eq("id", idToRemove);
+      setCheckResults(prev => prev.map(r =>
+        r.give_card === item.give_card
+          ? { ...r, quantity: r.quantity - 1, ids: r.ids.slice(0, -1) }
+          : r
+      ));
+    }
+    setAdjustLoading(null);
+  };
+
   return (
     <div>
-      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 4 }}>🎁 Check My Donations</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
+          onClick={() => window.history.back()}>BACK</button>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>📋 My Trades</div>
+        <div style={{ width: 74 }} />
+      </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>See if someone need your donated card</div>
       <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
         value={checkUsername} onChange={e => setCheckUsername(sanitizeUsername(e.target.value))} />
@@ -1012,7 +1067,27 @@ const CheckDonationsPage = () => {
           ) : (
             checkResults.map((item, i) => (
               <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.give_card}{item.quantity > 1 && <span style={{ color: "#ff4500", marginLeft: 6 }}>{item.quantity}x</span>}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+                  {/* Quantity adjuster */}
+                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <button
+                      onClick={() => handleDecrease(item)}
+                      disabled={adjustLoading === item.give_card}
+                      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ff4500", background: "transparent", color: "#ff4500", fontSize: 18, fontWeight: 800, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      −
+                    </button>
+                    <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", minWidth: 20, textAlign: "center" }}>
+                      {adjustLoading === item.give_card ? "..." : item.quantity}
+                    </span>
+                    <button
+                      onClick={() => handleIncrease(item)}
+                      disabled={adjustLoading === item.give_card || item.quantity >= 5}
+                      style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${item.quantity >= 5 ? "#555" : "#3fb950"}`, background: "transparent", color: item.quantity >= 5 ? "#555" : "#3fb950", fontSize: 18, fontWeight: 800, cursor: item.quantity >= 5 ? "not-allowed" : "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      +
+                    </button>
+                  </div>
+                </div>
                 {item.claim_code ? (
                   <>
                     <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
@@ -1109,16 +1184,16 @@ function AppContent() {
     else alert("Error saving listing. Try again.");
   };
 
-  const handleFindCardSelect = async (card) => {
+  const handleFindCardSelect = async (card, mode) => {
     const cardName = getCardName(card);
     setFindCard(cardName); setFindStep(3);
     setFindLoading(true); setFindResult(null);
     const cutoff = getCutoff();
-    if (findMode === "need") {
+    if (mode === "need") {
       const { data: exchangeData } = await supabase.from("listings").select("*")
-        .eq("give_card", cardName).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
+        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
       const { data: donationData } = await supabase.from("listings").select("*")
-        .eq("give_card", cardName).eq("status", "available").eq("type", "donation")
+        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "donation")
         .is("claim_code", null).gte("created_at", cutoff);
       setFindResult({
         available: (exchangeData && exchangeData.length > 0) || (donationData && donationData.length > 0),
@@ -1197,7 +1272,7 @@ function AppContent() {
   const path = location.pathname;
   const getNavActive = (id) => {
     if (id === "home") return path === "/" || path === "/check";
-    if (id === "trade") return path === "/exchange" || path === "/finddonate";
+    if (id === "trade") return path === "/exchange" || path === "/find" || path === "/donate" || path === "/check";
     if (id === "stock") return path === "/stock";
     return false;
   };
@@ -1216,6 +1291,7 @@ function AppContent() {
       </div>
 
       <div style={s.content}>
+        
         <Routes>
           <Route path="/home" element={
             <HomeScreen
@@ -1228,6 +1304,7 @@ function AppContent() {
             />
           } />
           <Route path="/check" element={<CheckDonationsPage />} />
+          
           <Route path="/exchange" element={
             <ExchangeScreen
               exStep={exStep} setExStep={setExStep}
@@ -1241,31 +1318,6 @@ function AppContent() {
               exDone={exDone}
               resetExchange={resetExchange}
               handleExSubmit={handleExSubmit}
-            />
-          } />
-          <Route path="/finddonate" element={
-            <FindScreen
-              findMode={findMode} setFindMode={setFindMode}
-              findStep={findStep} setFindStep={setFindStep}
-              findCategory={findCategory} setFindCategory={setFindCategory}
-              findCard={findCard} setFindCard={setFindCard}
-              findResult={findResult} setFindResult={setFindResult}
-              findLoading={findLoading} setFindLoading={setFindLoading}
-              donateStep={donateStep} setDonateStep={setDonateStep}
-              donorUsername={donorUsername} setDonorUsername={setDonorUsername}
-              donateCard={donateCard} setDonateCard={setDonateCard}
-              donateQuantity={donateQuantity} setDonateQuantity={setDonateQuantity}
-              donateListedCount={donateListedCount}
-              donateLoading={donateLoading}
-              claimStep={claimStep} setClaimStep={setClaimStep}
-              claimCode={claimCode} setClaimCode={setClaimCode}
-              claimListingId={claimListingId} setClaimListingId={setClaimListingId}
-              claimLoading={claimLoading}
-              resetFind={resetFind}
-              handleDonateList={handleDonateList}
-              handleClaimDonation={handleClaimDonation}
-              handleFindCardSelect={handleFindCardSelect}
-              handleMarkDone={handleMarkDone}
             />
           } />
           <Route path="/find" element={
