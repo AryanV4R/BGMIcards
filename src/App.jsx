@@ -1050,7 +1050,7 @@ const CheckDonationsPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
           onClick={() => window.history.back()}>BACK</button>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>📋 My Trades</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>📋 My Donations</div>
         <div style={{ width: 74 }} />
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>See if someone need your donated card</div>
