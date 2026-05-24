@@ -1201,8 +1201,8 @@ function AppContent() {
       const { data: exchangeData } = await supabase.from("listings").select("*")
         .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
       const { data: donationData } = await supabase.from("listings").select("*")
-        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "donation")
-        .is("claim_code", null).gte("created_at", cutoff);
+  .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "donation")
+  .is("claim_code", null);
       setFindResult({
         available: (exchangeData && exchangeData.length > 0) || (donationData && donationData.length > 0),
         listings: exchangeData || [],
