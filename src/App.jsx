@@ -994,16 +994,24 @@ const CheckDonationsPage = () => {
         if (!acc[key]) acc[key] = { ...item, quantity: 0, ids: [] };
         acc[key].quantity += 1;
         acc[key].ids.push(item.id); // saare ids store karo
+        if (item.claim_code) {
+      acc[key].claim_code = item.claim_code;
+      acc[key].id = item.id; // Mark as Done sahi row pe chale
+    }
         return acc;
       }, {})
     );
-    setCheckResults(grouped);
+    setCheckResults(grouped.sort((a, b) => {
+  if (a.claim_code && !b.claim_code) return -1;
+  if (!a.claim_code && b.claim_code) return 1;
+  return 0;
+}));
     setCheckLoading(false);
   };
 
   const handleMarkDone = async (id) => {
     await supabase.from("listings").update({ status: "done" }).eq("id", id);
-    setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done" } : item) : prev);
+    setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done", claim_code: null } : item) : prev);
   };
 
   const handleIncrease = async (item) => {
