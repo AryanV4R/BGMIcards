@@ -23,7 +23,7 @@ const NEW_CATEGORIES = ["Hero's Crown", "BLUE LOCK", "Gourmet Tour - Middle East
 const CARDS = {
   "Hero's Crown": [
     { name: "Achilles' Phantom", rarity: "Golden" },
-    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Battle Flag - Activate", rarity: "Golden" },
     { name: "Icarus Pickup", rarity: "Golden" },
     { name: "Helion", rarity: "Blue" },
     { name: "Laurel", rarity: "Blue" },
@@ -84,11 +84,11 @@ const CARDS = {
     { name: "Ford F-150 Raptor", rarity: "Golden" },
     { name: "Harley-Davidson", rarity: "Golden" },
     { name: "Coming Soon", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
+    { name: "TRIAL OF FIRE REALITY SHOW CARD", rarity: "Blue" },
     { name: "Coming Soon", rarity: "Blue" },
     { name: "Coming Soon", rarity: "Blue" },
     { name: "Roadster", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
+    { name: "Celebrate Together", rarity: "Grey" },
     { name: "Coming Soon", rarity: "Grey" },
   ],
   "Evolving Universe": [
