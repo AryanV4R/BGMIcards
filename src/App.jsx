@@ -172,7 +172,7 @@ const s = {
   app: { background: "#0d1117", minHeight: "100dvh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column"},
   header: { background: "#161b22", borderBottom: "1px solid #21262d", padding: "14px 20px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 10 },
   logo: { width: 32, height: 32, background: "linear-gradient(135deg, #ff4500, #ff6534)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
-  content: { flex: 1, padding: "10px 1px 60px 1px", width: "100%", boxSizing: "border-box", },
+  content: { flex: 1, padding: "10px 1px 75px 1px", width: "100%", boxSizing: "border-box", },
   bottomNav: { position: "fixed", bottom: 0, left: 0, width: "100%", background: "#161b22", borderTop: "1px solid #21262d", display: "flex", padding: "8px 0 12px" },
   navItem: (active) => ({ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "6px 0", color: active ? "#ff4500" : "#8b949e", fontSize: 10, fontWeight: active ? 700 : 400, border: "none", background: "none" }),
   card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" },
@@ -241,6 +241,7 @@ const HomeScreen = ({
   checkLoading, checkResults,
   handleCheckDonations, handleMarkDone,
   liveExchange, liveDonations, dealsLoading, fetchDeals,  // ← ADD
+  handleMarkUsed, setLiveExchange,
 }) => {
   const navigate = useNavigate();
   const [dealsTab, setDealsTab] = useState("exchange");
@@ -268,7 +269,7 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
 
   {/* Sub-tabs */}
   <div style={s.subTabRow}>
-    <button style={s.subTab(dealsTab === "exchange")} onClick={() => setDealsTab("exchange")}>🟠 Exchange</button>
+    <button style={s.subTab(dealsTab === "exchange")} onClick={() => setDealsTab("exchange")}>⇅ Exchange</button>
     <button style={s.subTab(dealsTab === "donations")} onClick={() => setDealsTab("donations")}>🎁 Donations</button>
   </div>
 
@@ -332,6 +333,27 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
     </div>
     <div style={{ fontSize: 10, color: "#8b949e" }}>by {item.donor_username}</div>
   </div>
+)}
+{dealsTab === "exchange" && (
+  <button
+    onClick={() => handleMarkUsed(item.id, (id) => {
+      setLiveExchange(prev => prev.filter(l => l.id !== id));
+    })}
+    style={{
+    fontSize: 9, fontWeight: 700, letterSpacing: 0.8,
+  color: "#ff4500", background: "rgba(255,69,0,0.08)",
+  border: "none",
+  borderTop: "1px solid rgba(255,69,0,0.25)",
+  padding: "6px 0",
+  cursor: "pointer",
+  marginTop: 6,
+  marginLeft: -10,
+  marginRight: -10,
+  textTransform: "uppercase",
+  display: "block",
+  }}>
+  ✓ Mark as Done
+  </button>
 )}
                 {/* Rarity color strip at bottom */}
                 {/* Rarity color strip at bottom */}
@@ -547,19 +569,21 @@ const ExchangeScreen = ({
   wantSubStep, setWantSubStep,
   exCode, setExCode,
   exDone,
-  resetExchange, handleExSubmit,
+  matchResult,
+  resetExchange, handleExSubmit, handleExSubmitNoCode,
 }) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
   const progressPct = exStep === 1 ? 33 : exStep === 2 ? 66 : 100;
   const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
 
-  if (exDone) return (
+    if (exDone) {
+  // Normal submit with code
+  if (matchResult?.type === "code") return (
     <div style={{ textAlign: "center", paddingTop: 40 }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
       <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Listing Submitted!</div>
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16, textAlign: "left" }}>
-        <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 10, textTransform: "uppercase" }}>Summary</div>
         <div style={{ marginBottom: 8 }}>
           <span style={{ fontSize: 12, color: "#8b949e" }}>Giving</span>
           <div style={{ marginTop: 4 }}>
@@ -582,6 +606,72 @@ const ExchangeScreen = ({
     </div>
   );
 
+  // Perfect match...
+
+  // Perfect match
+  if (matchResult?.type === "perfect") return (
+    <div style={{ paddingTop: 20 }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 48, marginBottom: 8 }}>🎯</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#3fb950" }}>Perfect Match Found!</div>
+        <div style={{ fontSize: 12, color: "#8b949e", marginTop: 4 }}>Someone wants exactly what you're offering</div>
+      </div>
+      {matchResult.matches.map((m, i) => (
+        <div key={i} style={{ ...s.listingCard, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 4 }}>They are offering</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#3fb950", marginBottom: 8 }}>{m.give_card}</div>
+          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 4 }}>Their exchange code</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: 3 }}>{m.code}</div>
+          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
+        </div>
+      ))}
+      <button style={s.btn(false)} onClick={resetExchange}>Done</button>
+    </div>
+  );
+
+  // Partial match
+  if (matchResult?.type === "partial") return (
+    <div style={{ paddingTop: 20 }}>
+      <div style={{ textAlign: "center", marginBottom: 20 }}>
+        <div style={{ fontSize: 48, marginBottom: 8 }}>⚡</div>
+        <div style={{ fontSize: 18, fontWeight: 800, color: "#f0883e" }}>Partial Match Found!</div>
+        <div style={{ fontSize: 12, color: "#8b949e", marginTop: 4 }}>One of your cards matches an existing listing</div>
+      </div>
+      {matchResult.matches.map((m, i) => (
+        <div key={i} style={{ ...s.listingCard, marginBottom: 12 }}>
+          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 4 }}>They are offering</div>
+          <div style={{ fontSize: 14, fontWeight: 700, color: "#f0883e", marginBottom: 8 }}>{m.give_card}</div>
+          <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 4 }}>Their exchange code</div>
+          <div style={{ fontSize: 24, fontWeight: 800, color: "#fff", letterSpacing: 3 }}>{m.code}</div>
+          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>⚠️ Partial match — confirm with the other person before trading</div>
+        </div>
+      ))}
+      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8, marginBottom: 4, textAlign: "center" }}>
+        Your listing has also been saved for future matches
+      </div>
+      <button style={s.btn(false)} onClick={resetExchange}>Done</button>
+    </div>
+  );
+
+  // No match — normal listing saved
+  if (matchResult?.type === "none") return (
+  <div style={{ textAlign: "center", paddingTop: 40 }}>
+    <div style={{ fontSize: 48, marginBottom: 16 }}>🔍</div>
+    <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>No Match Found</div>
+    <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 16 }}>
+      No one is currently offering <span style={{ color: "#58a6ff", fontWeight: 600 }}>{wantCard}</span> in exchange for your card right now.
+    </div>
+    <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 24 }}>
+      Try again later or generate an exchange code when your cooldown ends and list it properly.
+    </div>
+    <button style={s.btn(false)} onClick={resetExchange}>Try Again</button>
+  </div>
+);
+  // Fallback — exDone true but matchResult not yet set
+  return null;
+  }
+
+  
   return (
     <div>
       <div style={s.progressBar}><div style={s.progressFill(progressPct)} /></div>
@@ -655,10 +745,17 @@ const ExchangeScreen = ({
             </div>
           </div>
           <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
-            inputMode="numeric" autoComplete="off" autoFocus
-            value={exCode} onChange={e => setExCode(e.target.value.replace(/\D/g, ""))} />
-          <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>Numbers only • Max 10 digits • Required</div>
-          <button style={s.btn(exCode.length < 7)} onClick={handleExSubmit}>Submit Listing</button>
+  inputMode="numeric" autoComplete="off"
+  value={exCode} onChange={e => setExCode(e.target.value.replace(/\D/g, ""))} />
+<div style={{ fontSize: 11, color: "#8b949e", marginTop: 8, marginBottom: 4 }}>
+  Numbers only • Max 10 digits
+</div>
+<button style={s.btn(exCode.length < 7)} onClick={handleExSubmit}>
+  Submit with Code
+</button>
+<button style={s.btnSecondary} onClick={handleExSubmitNoCode}>
+  I don't have a code yet — Find Match
+</button>
         </>
       )}
     </div>
@@ -812,7 +909,7 @@ const FindScreen = ({
                         handleMarkDone(item.id);
                         setFindResult(prev => prev ? { ...prev, listings: (prev.listings || []).filter(listing => listing.id !== item.id) } : prev);
                       }}>
-                      Mark as used / Remove listing
+                      Mark as Done / Remove listing
                     </button>
                   </div>
                 ))}
@@ -857,7 +954,7 @@ const FindScreen = ({
                 <div style={{ marginTop: 10 }}>
                   <button type="button" style={{ ...s.btnSecondary, padding: "8px", fontSize: 13, marginRight: 8 }}
                     onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); setFindResult(prev => prev ? { ...prev, listings: (prev.listings || []).filter(listing => listing.id !== item.id) } : prev); }}>
-                    Mark as used
+                    Mark as Done
                   </button>
                 </div>
               </div>
@@ -936,7 +1033,7 @@ const RulesPage = () => (
       { title: "1. Use the Portal, Not the Subreddit", desc: "Do not post card requests in subreddit comments or posts. Use the portal exclusively for all trade-related activity." },
       { title: "2. Stick to Your Username", desc: "Always use the same username when listing donations. Changing your username will result in losing access to your donation history and pending claims." },
       { title: "3. Keep it Organised", desc: "After completing a trade, try to mark your listing as done within 24 hours. Outdated listings clutter the portal and waste other users' time on used codes." },
-      { title: "4. Don't Mark Others' Listings as Used", desc: "Only mark a listing as 'used' if you personally completed that trade. Falsely marking active listings removes valid offers for other users and may result in a ban." },
+      { title: "4. Don't Mark Others' Listings as Used", desc: "Only mark a listing as 'Done' if you personally completed that trade. Falsely marking active listings removes valid offers for other users and may result in a ban." },
       { title: "5. Found a Bug? Let Us Know", desc: <span>If you encounter any issue or unexpected behavior on the portal, DM <a href="https://www.reddit.com/message/compose/?to=AryanV4" style={{ color: "#58a6ff", textDecoration: "none" }}>u/AryanV4</a> on Reddit. Direct messages ensure faster resolution.</span> },
     ].map((rule, i) => (
       <div key={i} style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 10 }}>
@@ -1196,6 +1293,7 @@ function AppContent() {
   const [wantSubStep, setWantSubStep] = useState(1);
   const [exCode, setExCode] = useState("");
   const [exDone, setExDone] = useState(false);
+  const [matchResult, setMatchResult] = useState(null); // null | {type: "perfect"|"partial", matches: [], code: string}
 
   // Find state
   const [findMode, setFindMode] = useState(null);
@@ -1236,12 +1334,21 @@ const fetchDeals = useCallback(async () => {
   const { data: ex } = await supabase.from("listings").select("*")
     .eq("type", "exchange").eq("status", "available")
     .gte("created_at", cutoff).order("created_at", { ascending: false }).limit(6);
-  const { data: don } = await supabase.from("listings").select("*")
-    .eq("type", "donation").eq("status", "available")
-    .is("claim_code", null).gte("created_at", cutoff)
-    .order("created_at", { ascending: false }).limit(6);
-  setLiveExchange(ex || []);
-  setLiveDonations(don || []);
+  const { data: donRaw } = await supabase.from("listings").select("*")
+  .eq("type", "donation").eq("status", "available")
+  .is("claim_code", null).gte("created_at", cutoff)
+  .order("created_at", { ascending: false }).limit(20);
+
+// Deduplicate by give_card — sirf pehli occurrence rakho
+const seen = new Set();
+const don = (donRaw || []).filter(item => {
+  if (seen.has(item.give_card)) return false;
+  seen.add(item.give_card);
+  return true;
+}).slice(0, 6);
+
+setLiveExchange(ex || []);
+setLiveDonations(don);
   setDealsLoading(false);
 }, []);
 
@@ -1251,6 +1358,7 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
     setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
     setWantCategory(null); setWantCard(null); setWantSubStep(1);
     setExCode(""); setExDone(false);
+    setMatchResult(null);
   };
 
   const resetFind = () => {
@@ -1267,10 +1375,57 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
       give_card: giveCards.join(" | "), want_card: wantCard,
       code: exCode, status: "available", type: "exchange",
     }]);
-    if (!error) setExDone(true);
+    if (!error) { setMatchResult({ type: "code" }); setExDone(true); }
     else alert("Error saving listing. Try again.");
   };
+  
 
+  const handleExSubmitNoCode = async () => {
+  const cutoff = getCutoff();
+  
+  // Perfect mirror match check — Case 1
+  // give_card exact match with want_card of existing, and want_card match with give_card
+  const { data: perfectMatches } = await supabase.from("listings")
+    .select("*")
+    .eq("want_card", giveCards[0])       // unka want = mera give
+    .ilike("give_card", `%${wantCard}%`) // unka give = mera want
+    .eq("status", "available")
+    .eq("type", "exchange")
+    .not("code", "is", null)             // code hona chahiye
+    .gte("created_at", cutoff);
+
+  if (perfectMatches && perfectMatches.length > 0) {
+    // Perfect match mila — code display karo, mark as done
+    setMatchResult({ type: "perfect", matches: perfectMatches });
+    setExDone(true);
+    return;
+  }
+
+  // Partial match check — Case 2
+  // give_card ke kisi bhi card ka want_card match ho
+  const partialPromises = giveCards.map(card =>
+    supabase.from("listings").select("*")
+      .eq("want_card", card)
+      .ilike("give_card", `%${wantCard}%`)
+      .eq("status", "available")
+      .eq("type", "exchange")
+      .not("code", "is", null)
+      .gte("created_at", cutoff)
+  );
+  const partialResults = await Promise.all(partialPromises);
+  const partialMatches = partialResults.flatMap(r => r.data || []);
+
+  if (partialMatches.length > 0) {
+    setMatchResult({ type: "partial", matches: partialMatches });
+    setExDone(true);
+    return;
+  }
+
+  // Case 3 — no match, save as code-less listing
+  // Case 3 — no match, kuch save nahi karna
+setMatchResult({ type: "none" });
+setExDone(true);
+};
   const handleFindCardSelect = async (card, mode) => {
     const cardName = getCardName(card);
     setFindCard(cardName); setFindStep(3);
@@ -1278,7 +1433,7 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
     const cutoff = getCutoff();
     if (mode === "need") {
       const { data: exchangeData } = await supabase.from("listings").select("*")
-        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
+        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "exchange").not("code", "is", null).gte("created_at", cutoff);
       const { data: donationData } = await supabase.from("listings").select("*")
   .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "donation")
   .is("claim_code", null);
@@ -1289,7 +1444,7 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
       });
     } else {
       const { data } = await supabase.from("listings").select("*")
-        .eq("want_card", cardName).eq("status", "available").eq("type", "exchange").gte("created_at", cutoff);
+        .eq("want_card", cardName).eq("status", "available").eq("type", "exchange").not("code", "is", null).gte("created_at", cutoff);
       if (data && data.length > 0) {
         setFindResult({ searching: true, listings: data, cardToList: cardName });
       } else {
@@ -1355,7 +1510,15 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
     setCheckResults(grouped);
     setCheckLoading(false);
   };
-
+  const handleMarkUsed = async (id, onSuccess) => {
+  const confirmed = window.confirm("Did you use this exchange code? This will remove the listing for everyone.");
+  if (!confirmed) return;
+  await supabase.from("listings").update({ status: "done" }).eq("id", id);
+  if (onSuccess) onSuccess(id);
+};
+useEffect(() => {
+  window.scrollTo({ top: 0, behavior: "instant" });
+}, [location.pathname]);
   const path = location.pathname;
   const getNavActive = (id) => {
     if (id === "home") return path === "/" || path === "/check";
@@ -1392,6 +1555,8 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
   liveDonations={liveDonations}
   dealsLoading={dealsLoading}
   fetchDeals={fetchDeals}
+  handleMarkUsed={handleMarkUsed}
+  setLiveExchange={setLiveExchange}
             />
           } />
           <Route path="/check" element={<CheckDonationsPage />} />
@@ -1407,6 +1572,8 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
               wantSubStep={wantSubStep} setWantSubStep={setWantSubStep}
               exCode={exCode} setExCode={setExCode}
               exDone={exDone}
+              matchResult={matchResult}
+              handleExSubmitNoCode={handleExSubmitNoCode}
               resetExchange={resetExchange}
               handleExSubmit={handleExSubmit}
             />
@@ -1476,7 +1643,7 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
           { id: "trade", icon: "⇅", label: "Trade", path: "/exchange" },
           { id: "stock", icon: "📦", label: "Stock", path: "/stock" },
         ].map(({ id, icon, label, path: navPath }) => (
-          <button key={id} style={s.navItem(getNavActive(id))} onClick={() => navigate(navPath)}>
+          <button key={id} style={s.navItem(getNavActive(id))} onClick={() => { if (navPath === "/exchange") resetExchange(); navigate(navPath); }}>
             <span style={{ fontSize: 20 }}>{icon}</span>
             <span>{label}</span>
           </button>
@@ -1493,3 +1660,4 @@ export default function App() {
     </BrowserRouter>
   );
 }
+
