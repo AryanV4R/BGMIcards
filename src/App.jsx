@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 
@@ -242,6 +242,29 @@ const HomeScreen = ({
   handleCheckDonations, handleMarkDone,
 }) => {
   const navigate = useNavigate();
+  const [dealsTab, setDealsTab] = useState("exchange");
+const [liveExchange, setLiveExchange] = useState([]);
+const [liveDonations, setLiveDonations] = useState([]);
+const [dealsLoading, setDealsLoading] = useState(true);
+
+const fetchDeals = useCallback(async () => {
+  setDealsLoading(true);
+  const cutoff = getCutoff();
+  const { data: ex } = await supabase.from("listings").select("*")
+    .eq("type", "exchange").eq("status", "available")
+    .gte("created_at", cutoff).order("created_at", { ascending: false }).limit(6);
+  const { data: don } = await supabase.from("listings").select("*")
+    .eq("type", "donation").eq("status", "available")
+    .is("claim_code", null).gte("created_at", cutoff)
+    .order("created_at", { ascending: false }).limit(6);
+  setLiveExchange(ex || []);
+  setLiveDonations(don || []);
+  setDealsLoading(false);
+}, []);
+
+useEffect(() => { fetchDeals(); }, [fetchDeals]);
+
+const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", Grey: "#8b949e" };
   return (
     <div>
       <div style={{ marginBottom: 24 }}>
@@ -330,12 +353,103 @@ const HomeScreen = ({
       )}
 
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
-        <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 6 }}>📌 Subreddit</div>
-        <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", fontWeight: 600, textDecoration: "none" }}>r/BGMIcards</a>
-        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Join the community for trades & discussions</div>
-      </div>
+
+  {/* Header row */}
+  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+    <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+      🔥 Live Deals
+      <span style={{ fontSize: 11, color: "#8b949e", fontWeight: 400, marginLeft: 6 }}>
+        ({liveExchange.length + liveDonations.length} active)
+      </span>
     </div>
-  );
+    <button onClick={fetchDeals}
+      style={{ background: "none", border: "1px solid #30363d", borderRadius: 6, color: "#8b949e", cursor: "pointer", fontSize: 11, padding: "3px 8px" }}>
+      ↻ Refresh
+    </button>
+  </div>
+
+  {/* Sub-tabs */}
+  <div style={s.subTabRow}>
+    <button style={s.subTab(dealsTab === "exchange")} onClick={() => setDealsTab("exchange")}>🟠 Exchange</button>
+    <button style={s.subTab(dealsTab === "donations")} onClick={() => setDealsTab("donations")}>🎁 Donations</button>
+  </div>
+
+  {/* Content */}
+  {dealsLoading ? (
+    <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center", padding: "16px 0" }}>Loading deals...</div>
+  ) : (
+    <>
+      {/* Horizontal scroll strip */}
+      <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none" }}>
+        {(dealsTab === "exchange" ? liveExchange : liveDonations).length === 0 ? (
+          <div style={{ fontSize: 12, color: "#8b949e", padding: "8px 0" }}>
+            No active {dealsTab} deals right now 🤷
+          </div>
+        ) : (
+          (dealsTab === "exchange" ? liveExchange : liveDonations).map((item, i) => {
+            const firstCard = item.give_card ? item.give_card.split(" | ")[0] : "";
+            const rarity = getRarityByName(firstCard);
+            const strip = rarityColor[rarity] || "#30363d";
+            return (
+              <div key={i} style={{
+                minWidth: 148, maxWidth: 148, flexShrink: 0,
+                height: 130,
+                background: "#0d1117", borderRadius: 12,
+                border: `1px solid ${strip}44`,
+                boxShadow: `0 0 10px ${strip}18`,
+                padding: "12px 10px 0 10px", overflow: "hidden",
+                display: "flex", flexDirection: "column",
+              }}>
+                {/* Badge */}
+                <div style={{ fontSize: 10, fontWeight: 800, marginBottom: 8,
+                  color: dealsTab === "exchange" ? "#ff6534" : "#3fb950" }}>
+                  {dealsTab === "exchange" ? "🟠 EXCHANGE" : "🎁 FREE"}
+                </div>
+
+                {/* Give card */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#fff",
+                  lineHeight: 1.3, marginBottom: 4,
+                  overflow: "hidden", display: "-webkit-box",
+                  WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                  {item.give_card}
+                </div>
+
+                {dealsTab === "exchange" ? (
+                  <>
+                    <div style={{ fontSize: 10, color: "#8b949e", margin: "4px 0" }}>↕ wants</div>
+                    <div style={{ fontSize: 11, fontWeight: 600, color: "#58a6ff",
+                      lineHeight: 1.3, marginBottom: 10,
+                      overflow: "hidden", display: "-webkit-box",
+                      WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                      {item.want_card}
+                    </div>
+                  </>
+                ) : (
+                  <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 10 }}>
+                    by {item.donor_username}
+                  </div>
+                )}
+
+                {/* Rarity color strip at bottom */}
+                {/* Rarity color strip at bottom */}
+<div style={{ height: 4, background: strip, margin: "0 -10px", marginTop: "auto" }} />
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* Community link */}
+      <a href="https://reddit.com/r/BGMIcards"
+        style={{ fontSize: 11, color: "#58a6ff", textDecoration: "none",
+          display: "block", textAlign: "right", marginTop: 10 }}>
+        r/BGMIcards →
+      </a>
+    </>
+  )}
+</div>
+      </div>
+);
 };
 
 // ─── GiveCardStep ─────────────────────────────────────────────────────────────
