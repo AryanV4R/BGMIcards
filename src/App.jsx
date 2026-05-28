@@ -861,8 +861,11 @@ const FindScreen = ({
 
   if (claimStep === "input") return (
     <div>
-      <button style={s.backBtn} onClick={() => setClaimStep("idle")}>‹ Back</button>
-      <div style={{ fontSize: 16, fontWeight: 700, color: "#fff", marginBottom: 4 }}>Claim Donation</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+        <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => setClaimStep("idle")}>BACK</button>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Claim Donation</div>
+        <div style={{ width: 74 }} />
+      </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{findCard}</span></div>
       <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code — the donor will see this and complete the trade in BGMI soon :</div>
       <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
