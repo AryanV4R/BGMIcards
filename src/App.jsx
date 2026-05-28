@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 
@@ -169,10 +169,10 @@ const isValidUsername = (u) => {
 const normalizeUsername = (u) => (u || "").trim().toLowerCase();
 
 const s = {
-  app: { background: "#0d1117", height: "100vh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column", overflowX: "hidden" },
+  app: { background: "#0d1117", minHeight: "100dvh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column"},
   header: { background: "#161b22", borderBottom: "1px solid #21262d", padding: "14px 20px", display: "flex", alignItems: "center", gap: 10, position: "sticky", top: 0, zIndex: 10 },
   logo: { width: 32, height: 32, background: "linear-gradient(135deg, #ff4500, #ff6534)", borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 },
-  content: { flex: 1, padding: "20px 24px 90px 24px", width: "100%", boxSizing: "border-box", overflowY: "auto" },
+  content: { flex: 1, padding: "10px 1px 60px 1px", width: "100%", boxSizing: "border-box", },
   bottomNav: { position: "fixed", bottom: 0, left: 0, width: "100%", background: "#161b22", borderTop: "1px solid #21262d", display: "flex", padding: "8px 0 12px" },
   navItem: (active) => ({ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "6px 0", color: active ? "#ff4500" : "#8b949e", fontSize: 10, fontWeight: active ? 700 : 400, border: "none", background: "none" }),
   card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" },
@@ -240,118 +240,16 @@ const HomeScreen = ({
   checkUsername, setCheckUsername,
   checkLoading, checkResults,
   handleCheckDonations, handleMarkDone,
+  liveExchange, liveDonations, dealsLoading, fetchDeals,  // ← ADD
 }) => {
   const navigate = useNavigate();
   const [dealsTab, setDealsTab] = useState("exchange");
-const [liveExchange, setLiveExchange] = useState([]);
-const [liveDonations, setLiveDonations] = useState([]);
-const [dealsLoading, setDealsLoading] = useState(true);
-
-const fetchDeals = useCallback(async () => {
-  setDealsLoading(true);
-  const cutoff = getCutoff();
-  const { data: ex } = await supabase.from("listings").select("*")
-    .eq("type", "exchange").eq("status", "available")
-    .gte("created_at", cutoff).order("created_at", { ascending: false }).limit(6);
-  const { data: don } = await supabase.from("listings").select("*")
-    .eq("type", "donation").eq("status", "available")
-    .is("claim_code", null).gte("created_at", cutoff)
-    .order("created_at", { ascending: false }).limit(6);
-  setLiveExchange(ex || []);
-  setLiveDonations(don || []);
-  setDealsLoading(false);
-}, []);
-
-useEffect(() => { fetchDeals(); }, [fetchDeals]);
+  const scrollRef = useRef(null);
+  const [activeIndex, setActiveIndex] = useState(0);
 
 const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", Grey: "#8b949e" };
   return (
-    <div>
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ fontSize: 13, color: "#8b949e", marginBottom: 2 }}>Welcome to</div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: "#fff", letterSpacing: "-0.5px" }}>
-          r/BGMIcards <span style={{ color: "#ff4500" }}>Portal</span>
-        </div>
-        <div style={{ fontSize: 12, color: "#8b949e", marginTop: 4 }}>BGMI Card Exchange Community</div>
-      </div>
-
-      <div style={s.sectionTitle}>Quick Access</div>
-
-      <div style={{ marginBottom: 24 }}>
-        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
-          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-            onClick={() => navigate("/exchange")}>
-            <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your card for exchange</div>
-          </div>
-          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-            onClick={() => navigate("/find")}>
-            <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Find players offering your card</div>
-          </div>
-        </div>
-        <div style={{ display: "flex", gap: 10 }}>
-          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-            onClick={() => navigate("/donate")}>
-            <div style={{ width: 44, height: 44, background: "rgba(35,134,54,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🎁</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Donate Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your extra cards</div>
-          </div>
-          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
-            onClick={() => navigate("/check")}>
-            <div style={{ width: 44, height: 44, background: "rgba(240,136,62,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>📋</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>My Donations</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Check your donations</div>
-          </div>
-        </div>
-      </div>
-      
-      {false && (
-      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16, marginBottom: 16 }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 4 }}>🎁 Check My Donations</div>
-        <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 12 }}>Enter your Reddit Username / Custom Username to see if someone needs your donated card.</div>
-        <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
-          value={checkUsername} onChange={e => setCheckUsername(sanitizeUsername(e.target.value))} />
-        <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
-          onClick={handleCheckDonations}>
-          {checkLoading ? "Checking..." : "Check"}
-        </button>
-        {checkResults !== null && (
-          <div style={{ marginTop: 12 }}>
-            {checkResults.length === 0 ? (
-              <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center" }}>No donations found for this username</div>
-            ) : (
-              checkResults.map((item, i) => (
-                <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#fff", marginBottom: 6 }}>{item.give_card}{item.quantity > 1 && <span style={{ color: "#ff4500", marginLeft: 6 }}>{item.quantity}x</span>}</div>
-                  {item.claim_code ? (
-                    <>
-                      <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
-                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Their exchange code:</div>
-                      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
-                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
-                      {item.status !== "done" ? (
-                        <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
-                          onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
-                          ✅ Mark as Done
-                        </button>
-                      ) : (
-                        <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Trade Completed</div>
-                      )}
-                    </>
-                  ) : (
-                    <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        )}
-      </div>
-      )}
-
+    <div>      
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
 
   {/* Header row */}
@@ -380,7 +278,18 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
   ) : (
     <>
       {/* Horizontal scroll strip */}
-      <div style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none" }}>
+      <div
+  ref={scrollRef}
+  onScroll={() => {
+    requestAnimationFrame(() => {
+      if (scrollRef.current) {
+        const scrollLeft = scrollRef.current.scrollLeft;
+        const cardWidth = 158;
+        setActiveIndex(Math.round(scrollLeft / cardWidth));
+      }
+    });
+  }}
+  style={{ display: "flex", gap: 10, overflowX: "auto", paddingBottom: 6, scrollbarWidth: "none", position: "relative", touchAction: "pan-x pinch-zoom" }}>
         {(dealsTab === "exchange" ? liveExchange : liveDonations).length === 0 ? (
           <div style={{ fontSize: 12, color: "#8b949e", padding: "8px 0" }}>
             No active {dealsTab} deals right now 🤷
@@ -393,43 +302,37 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
             return (
               <div key={i} style={{
                 minWidth: 148, maxWidth: 148, flexShrink: 0,
-                height: 130,
                 background: "#0d1117", borderRadius: 12,
                 border: `1px solid ${strip}44`,
-                boxShadow: `0 0 10px ${strip}18`,
                 padding: "12px 10px 0 10px", overflow: "hidden",
                 display: "flex", flexDirection: "column",
               }}>
-                {/* Badge */}
-                <div style={{ fontSize: 10, fontWeight: 800, marginBottom: 8,
-                  color: dealsTab === "exchange" ? "#ff6534" : "#3fb950" }}>
-                  {dealsTab === "exchange" ? "🟠 EXCHANGE" : "🎁 FREE"}
-                </div>
-
-                {/* Give card */}
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#fff",
-                  lineHeight: 1.3, marginBottom: 4,
-                  overflow: "hidden", display: "-webkit-box",
-                  WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {item.give_card}
-                </div>
-
                 {dealsTab === "exchange" ? (
-                  <>
-                    <div style={{ fontSize: 10, color: "#8b949e", margin: "4px 0" }}>↕ wants</div>
-                    <div style={{ fontSize: 11, fontWeight: 600, color: "#58a6ff",
-                      lineHeight: 1.3, marginBottom: 10,
-                      overflow: "hidden", display: "-webkit-box",
-                      WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                      {item.want_card}
-                    </div>
-                  </>
-                ) : (
-                  <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 10 }}>
-                    by {item.donor_username}
-                  </div>
-                )}
-
+  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 6 }}>
+    <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: 1.4,
+      overflow: "hidden", display: "-webkit-box",
+      WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>
+      {item.give_card.split(" | ").map((c, i, a) => (
+  <span key={i}><span style={{ color: "#fff" }}>{c}</span>{i < a.length - 1 && <span style={{ color: "#ff4500" }}> | </span>}</span>
+))}
+{" "}<span style={{ color: "#ff4500" }}>⇄</span>{" "}
+<span style={{ color: "#58a6ff" }}>{item.want_card}</span>
+    </div>
+    <div style={{ fontSize: 10, color: "#8b949e" }}>
+      CODE : <span style={{ color: "#fff", fontWeight: 700, letterSpacing: 1 }}>{item.code}</span>
+    </div>
+  </div>
+) : (
+  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 6 }}>
+    <div style={{ fontSize: 10, fontWeight: 800, color: "#3fb950" }}>🎁 FREE</div>
+    <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: 1.4,
+      overflow: "hidden", display: "-webkit-box",
+      WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+      {item.give_card}
+    </div>
+    <div style={{ fontSize: 10, color: "#8b949e" }}>by {item.donor_username}</div>
+  </div>
+)}
                 {/* Rarity color strip at bottom */}
                 {/* Rarity color strip at bottom */}
 <div style={{ height: 4, background: strip, margin: "0 -10px", marginTop: "auto" }} />
@@ -438,13 +341,54 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
           })
         )}
       </div>
+      <div style={{ display: "flex", justifyContent: "center", gap: 4, marginTop: 8,
+  visibility: scrollRef.current?.scrollWidth > scrollRef.current?.clientWidth ? "visible" : "hidden" }}>
+        {(dealsTab === "exchange" ? liveExchange : liveDonations).map((_, i) => (
+          <div key={i} style={{
+            width: i === activeIndex ? 10 : 5,
+            height: 5, borderRadius: 999,
+            background: i === activeIndex ? "#ff4500" : "#30363d",
+            transition: "all 0.2s ease",
+          }} />
+        ))}
+      </div>
+      <div style={{ marginTop: 16, marginBottom: 16 }}>
+        <div style={{ display: "flex", gap: 10, marginBottom: 10 }}>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/exchange")}>
+            <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your exchange</div>
+          </div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/find")}>
+            <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Find required cards</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: 10 }}>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/donate")}>
+            <div style={{ width: 44, height: 44, background: "rgba(35,134,54,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🎁</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Donate Cards</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your extra cards</div>
+          </div>
+          <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
+            onClick={() => navigate("/check")}>
+            <div style={{ width: 44, height: 44, background: "rgba(240,136,62,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>📋</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>My Donations</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Check your donations</div>
+          </div>
+        </div>
+      </div>
+      
 
-      {/* Community link */}
-      <a href="https://reddit.com/r/BGMIcards"
-        style={{ fontSize: 11, color: "#58a6ff", textDecoration: "none",
-          display: "block", textAlign: "right", marginTop: 10 }}>
-        r/BGMIcards →
-      </a>
+      <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 16 }}>
+        <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 6 }}>📌 Subreddit</div>
+        <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", fontWeight: 600, textDecoration: "none" }}>r/BGMIcards</a>
+        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Join the community for trades & discussions</div>
+      </div>
     </>
   )}
 </div>
@@ -1281,6 +1225,27 @@ function AppContent() {
   const [checkUsername, setCheckUsername] = useState("");
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
+  // Live Deals state
+const [liveExchange, setLiveExchange] = useState([]);
+const [liveDonations, setLiveDonations] = useState([]);
+const [dealsLoading, setDealsLoading] = useState(true);
+
+const fetchDeals = useCallback(async () => {
+  setDealsLoading(true);
+  const cutoff = getCutoff();
+  const { data: ex } = await supabase.from("listings").select("*")
+    .eq("type", "exchange").eq("status", "available")
+    .gte("created_at", cutoff).order("created_at", { ascending: false }).limit(6);
+  const { data: don } = await supabase.from("listings").select("*")
+    .eq("type", "donation").eq("status", "available")
+    .is("claim_code", null).gte("created_at", cutoff)
+    .order("created_at", { ascending: false }).limit(6);
+  setLiveExchange(ex || []);
+  setLiveDonations(don || []);
+  setDealsLoading(false);
+}, []);
+
+useEffect(() => { fetchDeals(); }, [fetchDeals]);
 
   const resetExchange = () => {
     setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
@@ -1401,7 +1366,7 @@ function AppContent() {
 
   return (
     <div style={s.app}>
-      <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    
       <div style={s.header}>
         <div style={{ ...s.logo, cursor: "pointer" }} onClick={() => navigate("/home")}>🃏</div>
         <div>
@@ -1418,11 +1383,15 @@ function AppContent() {
           <Route path="/home" element={
             <HomeScreen
               checkUsername={checkUsername}
-              setCheckUsername={setCheckUsername}
-              checkLoading={checkLoading}
-              checkResults={checkResults}
-              handleCheckDonations={handleCheckDonations}
-              handleMarkDone={handleMarkDone}
+  setCheckUsername={setCheckUsername}
+  checkLoading={checkLoading}
+  checkResults={checkResults}
+  handleCheckDonations={handleCheckDonations}
+  handleMarkDone={handleMarkDone}
+  liveExchange={liveExchange}
+  liveDonations={liveDonations}
+  dealsLoading={dealsLoading}
+  fetchDeals={fetchDeals}
             />
           } />
           <Route path="/check" element={<CheckDonationsPage />} />
