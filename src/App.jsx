@@ -2,6 +2,13 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from "react-router-dom";
 
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = atob(base64);
+  return new Uint8Array([...rawData].map(c => c.charCodeAt(0)));
+}
+
 const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkYnp6YnJ1c21qeXFmbG90YmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTE3OTIsImV4cCI6MjA5NDIyNzc5Mn0.P7ycuWMpez18pB0amWVZfrRqDuFaqp8V3ZkO_V-3i4s";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -1398,11 +1405,8 @@ setLiveDonations(don);
 }, []);
 
 useEffect(() => { fetchDeals(); }, [fetchDeals]);
-// Auto-subscribe on app open if username already saved
-useEffect(() => {
-  const username = getSavedUsername();
-  if (username) subscribeToPush(username);
-}, []);
+
+// ✅ subscribeToPush PEHLE define karo
 const subscribeToPush = async (username) => {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
@@ -1411,7 +1415,8 @@ const subscribeToPush = async (username) => {
     if (permission !== 'granted') return;
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: 'BEoc4VYpYMA6ciIYeoMUwN5EVB31zywth1J_IT_woKdfd5QqzQ3KQCWvBqLaW7VBFxscKnv-GbgLY3s0QYyk-XQ'
+      // ✅ Ye nai line hai
+applicationServerKey: urlBase64ToUint8Array('BInoCMhfYMLKVncvj34EKUkCzjG8N4b4MtEiM-lIai7iSSGQAWVBIXhFwa9UWraVF1r7qJ80Ri3HZq9I2ipLg2Q')
     });
     await supabase.from('push_subscriptions').upsert({
       donor_username: normalizeUsername(username),
@@ -1419,6 +1424,12 @@ const subscribeToPush = async (username) => {
     }, { onConflict: 'donor_username' });
   } catch(e) { console.error('Push subscription failed:', e); }
 };
+
+// ✅ useEffect BAAD mein aaye
+useEffect(() => {
+  const username = getSavedUsername();
+  if (username) subscribeToPush(username);
+}, []);
   const resetExchange = () => {
     setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
     setWantCategory(null); setWantCard(null); setWantSubStep(1);
