@@ -12,6 +12,9 @@ Deno.serve(async (req) => {
   try {
     const payload = await req.json();
     const record = payload.record;
+    // DEBUG — ye add karo
+    console.log('record:', JSON.stringify(record));
+    console.log('old_record:', JSON.stringify(payload.old_record));
 
     if (!record?.claim_code || !record?.donor_username) {
       return new Response('ok');
