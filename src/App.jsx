@@ -1398,6 +1398,11 @@ setLiveDonations(don);
 }, []);
 
 useEffect(() => { fetchDeals(); }, [fetchDeals]);
+// Auto-subscribe on app open if username already saved
+useEffect(() => {
+  const username = getSavedUsername();
+  if (username) subscribeToPush(username);
+}, []);
 const subscribeToPush = async (username) => {
   if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
   try {
