@@ -5,7 +5,8 @@ import { BrowserRouter, Routes, Route, useNavigate, useLocation, Navigate } from
 const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkYnp6YnJ1c21qeXFmbG90YmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTE3OTIsImV4cCI6MjA5NDIyNzc5Mn0.P7ycuWMpez18pB0amWVZfrRqDuFaqp8V3ZkO_V-3i4s";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
+const getSavedUsername = () => localStorage.getItem("bgmi_username") || "";
+const saveUsername = (u) => localStorage.setItem("bgmi_username", u);
 const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }) => (
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, }}>
     {onBack ? (
@@ -834,9 +835,29 @@ const FindScreen = ({
           ))}
         </select>
       </div>
-      <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your Reddit Username or a Custom Username of your choice below :</div>
       <input style={s.input} placeholder="Enter your Reddit Username / Custom Username here."
-        value={donorUsername} onChange={e => setDonorUsername(sanitizeUsername(e.target.value))} />
+  value={donorUsername}
+  onChange={e => setDonorUsername(sanitizeUsername(e.target.value))}
+  onKeyDown={e => { if (e.key === "Enter" && isValidUsername(donorUsername)) handleDonateList(); }} />
+{getSavedUsername() && getSavedUsername().toLowerCase().startsWith(donorUsername.toLowerCase()) && donorUsername.toLowerCase() !== getSavedUsername().toLowerCase() && (
+  <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: "0 0 10px 10px",
+    borderTop: "none", overflow: "hidden", marginTop: -2 }}>
+    <div onClick={() => setDonorUsername(getSavedUsername())}
+      style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "10px 14px", cursor: "pointer" }}
+      onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
+      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, color: "#8b949e" }}>🕐</span>
+        <span style={{ fontSize: 13 }}>
+          <span style={{ color: "#e6e6e6" }}>{donorUsername}</span>
+          <span style={{ color: "#8b949e" }}>{getSavedUsername().slice(donorUsername.length)}</span>
+        </span>
+      </div>
+      <span style={{ fontSize: 11, color: "#58a6ff" }}>Use this →</span>
+    </div>
+  </div>
+)}
       <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>NOTE : This will be your permanent login Username. Please save it somewhere.</div>
       <button type="button" style={s.btn(donateLoading || !isValidUsername(donorUsername))} onClick={handleDonateList}>
         {donateLoading ? "Listing..." : `List ${donateQuantity} card${donateQuantity > 1 ? "s" : ""}`}
@@ -1164,6 +1185,7 @@ const CheckDonationsPage = () => {
   if (!a.claim_code && b.claim_code) return 1;
   return 0;
 }));
+    saveUsername(checkUsername.trim());
     setCheckLoading(false);
   };
 
@@ -1221,7 +1243,27 @@ const CheckDonationsPage = () => {
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>See if someone need your donated card</div>
       <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
-        value={checkUsername} onChange={e => setCheckUsername(sanitizeUsername(e.target.value))} />
+  value={checkUsername}
+  onChange={e => setCheckUsername(sanitizeUsername(e.target.value))}
+  onKeyDown={e => { if (e.key === "Enter" && checkUsername.trim()) handleCheckDonations(); }} />
+{getSavedUsername() && getSavedUsername().toLowerCase().startsWith(checkUsername.toLowerCase()) && checkUsername.toLowerCase() !== getSavedUsername().toLowerCase() && (
+  <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: "0 0 10px 10px",
+    borderTop: "none", overflow: "hidden", marginTop: -2 }}>
+    <div onClick={() => setCheckUsername(getSavedUsername())}
+      style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
+        padding: "10px 14px", cursor: "pointer" }}
+      onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
+      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ fontSize: 13, color: "#8b949e" }}>🕐</span>
+        <span style={{ fontSize: 13, color: "#e6e6e6" }}>
+  {checkUsername}{getSavedUsername().slice(checkUsername.length)}
+</span>
+      </div>
+      <span style={{ fontSize: 11, color: "#58a6ff" }}>Use this →</span>
+    </div>
+  </div>
+)}
       <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
         onClick={handleCheckDonations}>
         {checkLoading ? "Checking..." : "Check"}
@@ -1470,8 +1512,9 @@ setExDone(true);
       const { error } = await supabase.from("listings").insert(rows);
       setDonateLoading(false);
       if (!error) {
-        setDonateListedCount(donateQuantity);
-        setDonateStep("done");
+  saveUsername(donorUsername.trim());
+  setDonateListedCount(donateQuantity);
+  setDonateStep("done");
       } else {
         alert("Error listing donation. Try again.");
       }
@@ -1510,6 +1553,7 @@ setExDone(true);
         return acc;
       }, {})
     );
+    saveUsername(checkUsername.trim());
     setCheckResults(grouped);
     setCheckLoading(false);
   };
