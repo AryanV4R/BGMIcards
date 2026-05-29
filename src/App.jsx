@@ -167,7 +167,14 @@ const getRarityByName = (cardName) => {
   }
   return null;
 };
-
+const getCategoryByName = (cardName) => {
+  for (const [category, cards] of Object.entries(CARDS)) {
+    for (const card of cards) {
+      if (getCardName(card) === cardName) return category;
+    }
+  }
+  return null;
+};
 const sanitizeUsername = (raw) => (raw || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20);
 const isValidUsername = (u) => {
   if (!u) return false;
@@ -250,6 +257,8 @@ const HomeScreen = ({
   handleCheckDonations, handleMarkDone,
   liveExchange, liveDonations, dealsLoading, fetchDeals,  // ← ADD
   handleMarkUsed, setLiveExchange,
+  exchangeResults, setExchangeResults,
+  handleFindCardSelect, setFindMode, setFindCategory, setFindStep,
 }) => {
   const navigate = useNavigate();
   const [dealsTab, setDealsTab] = useState("exchange");
@@ -271,14 +280,14 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
     </div>
     <button onClick={fetchDeals}
       style={{ background: "none", border: "1px solid #30363d", borderRadius: 6, color: "#8b949e", cursor: "pointer", fontSize: 11, padding: "3px 8px" }}>
-      ↻ Refresh
+      ↻ REFRESH
     </button>
   </div>
 
   {/* Sub-tabs */}
   <div style={s.subTabRow}>
     <button style={s.subTab(dealsTab === "exchange")} onClick={() => setDealsTab("exchange")}>⇅ Exchange</button>
-    <button style={s.subTab(dealsTab === "donations")} onClick={() => setDealsTab("donations")}>🎁 Donations</button>
+    <button style={s.subTab(dealsTab === "donations")} onClick={() => setDealsTab("donations")}>🎁 Browse Extras</button>
   </div>
 
   {/* Content */}
@@ -315,6 +324,7 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
                 border: `1px solid ${strip}44`,
                 padding: "12px 10px 0 10px", overflow: "hidden",
                 display: "flex", flexDirection: "column",
+                height: 130,
               }}>
                 {dealsTab === "exchange" ? (
   <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 6 }}>
@@ -332,8 +342,19 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
     </div>
   </div>
 ) : (
-  <div style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 6 }}>
-    <div style={{ fontSize: 10, fontWeight: 800, color: "#3fb950" }}>🎁 FREE</div>
+  <div
+    style={{ display: "flex", flexDirection: "column", justifyContent: "center", flex: 1, gap: 6, cursor: "pointer", minHeight: 80 }}
+    onClick={() => {
+      const cardName = item.give_card;
+      const category = getCategoryByName(cardName);
+      if (!category) return;
+      setFindMode("need");
+      setFindCategory(category);
+      setFindStep(2);
+      navigate("/find");
+      handleFindCardSelect(cardName, "need");
+    }}>
+    <div style={{ fontSize: 10, fontWeight: 800, color: "#3fb950" }}>🎁 TAP TO CLAIM</div>
     <div style={{ fontSize: 11, fontWeight: 700, color: "#fff", lineHeight: 1.4,
       overflow: "hidden", display: "-webkit-box",
       WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
@@ -387,28 +408,28 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
             onClick={() => navigate("/exchange")}>
             <div style={{ width: 44, height: 44, background: "rgba(255,69,0,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>⇅</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Exchange Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your exchange</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Want to exchange cards ?</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Post an exchange offer to share your code with other players.</div>
           </div>
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
             onClick={() => navigate("/find")}>
             <div style={{ width: 44, height: 44, background: "rgba(88,166,255,0.15)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🔍</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Find Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Find required cards</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Need a specific card ?</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Find players offering the specific card you want to receive in exchange.</div>
           </div>
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
             onClick={() => navigate("/donate")}>
             <div style={{ width: 44, height: 44, background: "rgba(35,134,54,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>🎁</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Donate Cards</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your extra cards</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>Got Extras ?</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>List your extra cards for players who need them.</div>
           </div>
           <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 14, padding: "20px 16px", cursor: "pointer", flex: 1 }}
             onClick={() => navigate("/check")}>
-            <div style={{ width: 44, height: 44, background: "rgba(240,136,62,0.2)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>📋</div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: "#fff" }}>My Donations</div>
-            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Check your donations</div>
+            <div style={{ width: 44, height: 44, background: "rgb(115, 198, 253)", borderRadius: 10, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, marginBottom: 10 }}>👤</div>
+            <div style={{ fontSize: 14, fontWeight: 700, color: "#ffffff" }}>My Dashboard</div>
+            <div style={{ fontSize: 11, color: "#8b949e", marginTop: 3 }}>Track your extras and exchanges — all in one place.</div>
           </div>
         </div>
       </div>
@@ -454,7 +475,7 @@ const GiveCardStep = ({
       <div style={s.stepLabel}>Step 1 of 3</div>
       <div style={s.stepTitle}>
         Give Card(s)
-        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}> — select up to 3 same-rarity cards</span>
+        <span style={{ fontSize: 12, color: "#8b949e", fontWeight: 400 }}> — select up to 3 same-rarity cards to give.</span>
       </div>
 
       {giveCards.length > 0 && (
@@ -826,12 +847,12 @@ const FindScreen = ({
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
         <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
           onClick={() => setDonateStep("idle")}>BACK</button>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>List as Donation</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>List as Extra Cards</div>
         <div style={{ width: 74 }} />
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{donateCard}</span></div>
       <div style={{ marginBottom: 12 }}>
-        <div style={{ fontSize: 13, color: "#8b949e", textAlign: "center", marginBottom: 10 }}>How many copies do you want to donate?</div>
+        <div style={{ fontSize: 13, color: "#8b949e", textAlign: "center", marginBottom: 10 }}>Select Card Quantity :</div>
         <select
           style={{ ...s.input, padding: "12px 10px", textAlign: "center" }}
           value={donateQuantity}
@@ -881,7 +902,7 @@ const FindScreen = ({
       </div>
       <div style={{ background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: 14, marginBottom: 16, textAlign: "left" }}>
         <div style={{ fontSize: 11, color: "#8b949e", marginBottom: 6 }}>To check if someone needs your card:</div>
-        <div style={{ fontSize: 12, color: "#e6e6e6" }}>Go to <span style={{ color: "#ff4500", fontWeight: 600 }}>Home → Check My Donations</span> and enter your Reddit Username.</div>
+        <div style={{ fontSize: 12, color: "#e6e6e6" }}>Go to <span style={{ color: "#ff4500", fontWeight: 600 }}>HOME → Check My Dashboard</span> and enter your Reddit Username.</div>
       </div>
       <button style={s.btn(false)} onClick={resetFind}>Done</button>
     </div>
@@ -891,11 +912,11 @@ const FindScreen = ({
     <div>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
         <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }} onClick={() => setClaimStep("idle")}>BACK</button>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Claim Donation</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>Claim Extras</div>
         <div style={{ width: 74 }} />
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{findCard}</span></div>
-      <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code — the donor will see this and complete the trade in BGMI soon :</div>
+      <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code to claim this card :</div>
       <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
         inputMode="numeric" autoComplete="off" autoFocus
         value={claimCode} onChange={e => setClaimCode(e.target.value.replace(/\D/g, ""))} />
@@ -948,15 +969,26 @@ const FindScreen = ({
             )}
             {findResult.donations.length > 0 && (
               <>
-                <div style={s.sectionDivider}>🎁 Free Donations ({findResult.donations.length})</div>
+                <div style={s.sectionDivider}>🎁 Available Exchange Offers ({findResult.donations.length})</div>
                 {groupedDonations.map((g, i) => (
                   <div key={i} style={s.donationCard}>
                     <div style={{ fontSize: 11, color: "#8b949e" }}>Donor: <span style={{ color: "#58a6ff", fontWeight: 700 }}>{g.donor_username}</span> <span style={{ color: "#8b949e", marginLeft: 8 }}>({g.count}x)</span></div>
                     <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Enter your exchange code & get this card !</div>
-                    <button type="button" style={{ ...s.btnSecondary, marginTop: 10, padding: "9px", fontSize: 13 }}
-                      onClick={() => { setClaimListingId(g.ids[0]); setClaimStep("input"); }}>
-                      Claim this card — Enter your Exchange Code
-                    </button>
+                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+  <button
+    type="button"
+    style={{ ...s.btnSecondary, flex: 1, padding: "9px", fontSize: 13, fontWeight: 400 }}
+    onClick={() => { setClaimListingId(g.ids[0]); setClaimStep("input"); }}>
+    Enter your Exchange Code to claim this card 
+  </button>
+  <a
+    href={"https://www.reddit.com/r/BGMIcards/comments/1tq0fq3/bgmicards_discussion_megathread_w1/"}
+    target="_blank"
+    rel="noopener noreferrer"
+    style={{ ...s.btnSecondary, flex: 1,fontWeight: 400, padding: "9px", fontSize: 13, textAlign: "center", textDecoration: "none", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    Ask / Request to Gift in Megathread
+  </a>
+</div>
                   </div>
                 ))}
               </>
@@ -992,7 +1024,7 @@ const FindScreen = ({
             ))}
             <div style={{ marginTop: 12 }}>
               <button type="button" style={s.btnSecondary} onClick={(e) => { e.preventDefault(); setDonateCard(findResult.cardToList || findCard); setDonateStep("username"); }}>
-                🎁 List as Donation
+                🎁 List as Extra Card
               </button>
             </div>
             <a href="https://reddit.com/r/BGMIcards" style={{ fontSize: 13, color: "#58a6ff", textDecoration: "none" }}>→ Go to r/BGMIcards to connect</a>
@@ -1001,9 +1033,9 @@ const FindScreen = ({
           <div style={s.resultBox(false)}>
             <div style={{ fontSize: 32, marginBottom: 10 }}>🤷</div>
             <div style={{ fontSize: 15, fontWeight: 700, color: "#8b949e", marginBottom: 8 }}>No one needs this card right now</div>
-            <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>But you can list it as a donation — someone may need it later!</div>
+            <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>But you can list it as a Extras — someone may need it later!</div>
             <button type="button" style={s.btnSecondary} onClick={(e) => { e.preventDefault(); setDonateCard(findResult.cardToList || findCard); setDonateStep("username"); }}>
-              🎁 List as Donation
+              🎁 List as Extra Card
             </button>
           </div>
         )
@@ -1045,7 +1077,7 @@ const FindScreen = ({
       <div style={{ flex: 1, textAlign: "center", fontSize: 13, color: "#8b949e" }}>
     Result for <span style={{ color: "#ff4500", fontWeight: 800 }}>{findCard}</span></div>
     <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
-    onClick={() => { resetFind(); navigate("/find"); }}>HOME</button>
+    onClick={() => { resetFind(); navigate("/home"); }}>HOME</button>
     </div>
     {findStepContent}
   </>
@@ -1168,6 +1200,8 @@ const CheckDonationsPage = () => {
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
   const [adjustLoading, setAdjustLoading] = useState(null); // card name jo adjust ho raha hai
+  const [exchangeResults, setExchangeResults] = useState(null); // ← YE ADD KARO
+  const [activeTab, setActiveTab] = useState("donations");
 
   const handleCheckDonations = async () => {
     if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
@@ -1193,6 +1227,17 @@ const CheckDonationsPage = () => {
   return 0;
 }));
     saveUsername(checkUsername.trim());
+
+    // Exchange requests fetch
+    const { data: exData } = await supabase.from("listings").select("*")
+      .eq("requester_username", normalizeUsername(checkUsername))
+      .eq("type", "exchange");
+
+    const activeEx = (exData || []).filter(e => e.status === "available" && !e.claim_code);
+    const claimedEx = (exData || []).filter(e => e.status === "available" && e.claim_code);
+    const completedEx = (exData || []).filter(e => e.status === "done");
+
+    setExchangeResults({ active: activeEx, claimed: claimedEx, completed: completedEx });
     setCheckLoading(false);
   };
 
@@ -1245,11 +1290,11 @@ const CheckDonationsPage = () => {
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
         <button style={{ background: "transparent", border: "1px solid #ffffff", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", padding: "6px 14px", borderRadius: 8 }}
           onClick={() => window.history.back()}>BACK</button>
-        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>📋 My Donations</div>
+        <div style={{ fontSize: 16, fontWeight: 700, color: "#fff" }}>👤 My Dashboard</div>
         <div style={{ width: 74 }} />
       </div>
-      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>See if someone need your donated card</div>
-      <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username here."
+      <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Monitor your extras and exchanges — all in one place.</div>
+      <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username to access My Dashboard."
   value={checkUsername}
   onChange={e => setCheckUsername(sanitizeUsername(e.target.value))}
   onKeyDown={e => { if (e.key === "Enter" && checkUsername.trim()) handleCheckDonations(); }} />
@@ -1273,58 +1318,128 @@ const CheckDonationsPage = () => {
 )}
       <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
         onClick={handleCheckDonations}>
-        {checkLoading ? "Checking..." : "Check"}
+        {checkLoading ? "Logging in..." : "Login"}
       </button>
-      {checkResults !== null && (
-        <div style={{ marginTop: 12 }}>
-          {checkResults.length === 0 ? (
-            <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center" }}>No donations found for this username</div>
-          ) : (
-            checkResults.map((item, i) => (
-              <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
-                  {/* Quantity adjuster */}
-                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                    <button
-                      onClick={() => handleDecrease(item)}
-                      disabled={adjustLoading === item.give_card}
-                      style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ff4500", background: "transparent", color: "#ff4500", fontSize: 18, fontWeight: 800, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      −
-                    </button>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", minWidth: 20, textAlign: "center" }}>
-                      {adjustLoading === item.give_card ? "..." : item.quantity}
-                    </span>
-                    <button
-                      onClick={() => handleIncrease(item)}
-                      disabled={adjustLoading === item.give_card || item.quantity >= 5}
-                      style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${item.quantity >= 5 ? "#555" : "#3fb950"}`, background: "transparent", color: item.quantity >= 5 ? "#555" : "#3fb950", fontSize: 18, fontWeight: 800, cursor: item.quantity >= 5 ? "not-allowed" : "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      +
-                    </button>
-                  </div>
-                </div>
-                {item.claim_code ? (
-                  <>
-                    <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
-                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Their exchange code:</div>
-                    <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
-                    <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
-                    {item.status !== "done" ? (
-                      <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
-                        onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
-                        ✅ Mark as Done
-                      </button>
+      {(checkResults !== null || exchangeResults !== null) && (
+        <>
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 8, marginTop: 16, marginBottom: 12 }}>
+            <button
+              onClick={() => setActiveTab("donations")}
+              style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1px solid ${activeTab === "donations" ? "#ff4500" : "#30363d"}`, background: activeTab === "donations" ? "rgba(255,69,0,0.15)" : "transparent", color: activeTab === "donations" ? "#ff4500" : "#8b949e", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              🎁 My Extras
+            </button>
+            <button
+              onClick={() => setActiveTab("exchanges")}
+              style={{ flex: 1, padding: "10px", borderRadius: 10, border: `1px solid ${activeTab === "exchanges" ? "#58a6ff" : "#30363d"}`, background: activeTab === "exchanges" ? "rgba(88,166,255,0.1)" : "transparent", color: activeTab === "exchanges" ? "#58a6ff" : "#8b949e", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>
+              ⇅ My Exchanges {exchangeResults && exchangeResults.claimed.length > 0 && <span style={{ background: "#3fb950", color: "#000", borderRadius: 10, padding: "1px 6px", fontSize: 10, marginLeft: 4 }}>{exchangeResults.claimed.length}</span>}
+            </button>
+          </div>
+
+          {/* Donations Tab */}
+          {activeTab === "donations" && checkResults !== null && (
+            <div>
+              {checkResults.length === 0 ? (
+                <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center", padding: "20px 0" }}>No extra cards found</div>
+              ) : (
+                checkResults.map((item, i) => (
+                  <div key={i} style={{ ...s.listingCard, marginTop: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <button onClick={() => handleDecrease(item)} disabled={adjustLoading === item.give_card}
+                          style={{ width: 28, height: 28, borderRadius: 6, border: "1px solid #ff4500", background: "transparent", color: "#ff4500", fontSize: 18, fontWeight: 800, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>−</button>
+                        <span style={{ fontSize: 14, fontWeight: 700, color: "#fff", minWidth: 20, textAlign: "center" }}>
+                          {adjustLoading === item.give_card ? "..." : item.quantity}
+                        </span>
+                        <button onClick={() => handleIncrease(item)} disabled={adjustLoading === item.give_card || item.quantity >= 5}
+                          style={{ width: 28, height: 28, borderRadius: 6, border: `1px solid ${item.quantity >= 5 ? "#555" : "#3fb950"}`, background: "transparent", color: item.quantity >= 5 ? "#555" : "#3fb950", fontSize: 18, fontWeight: 800, cursor: item.quantity >= 5 ? "not-allowed" : "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                      </div>
+                    </div>
+                    {item.claim_code ? (
+                      <>
+                        <div style={{ fontSize: 11, color: "#3fb950" }}>✅ Someone needs this card!</div>
+                        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Their exchange code:</div>
+                        <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
+                        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the trade</div>
+                        {item.status !== "done" ? (
+                          <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+                            onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
+                            ✅ Mark as Done
+                          </button>
+                        ) : (
+                          <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Trade Completed</div>
+                        )}
+                      </>
                     ) : (
-                      <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Trade Completed</div>
+                      <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
                     )}
-                  </>
-                ) : (
-                  <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
-                )}
-              </div>
-            ))
+                  </div>
+                ))
+              )}
+            </div>
           )}
-        </div>
+
+          {/* Exchanges Tab */}
+          {activeTab === "exchanges" && exchangeResults && (
+            <div>
+              {exchangeResults.claimed.length > 0 && (
+                <>
+                  <div style={{ fontSize: 11, color: "#3fb950", marginBottom: 6 }}>✅ Someone matched! Complete the trade</div>
+                  {exchangeResults.claimed.map((item, i) => (
+                    <div key={i} style={{ ...s.listingCard, marginTop: 6, border: "1px solid #3fb950" }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff" }}>{item.want_card}</span></div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Their exchange code:</div>
+                      <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
+                      <button type="button"
+                        style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
+                        onClick={async () => {
+                          const confirmed = window.confirm("Did you use this exchange code?");
+                          if (!confirmed) return;
+                          await supabase.from("listings").update({ status: "done" }).eq("id", item.id);
+                          setExchangeResults(prev => ({
+                            ...prev,
+                            claimed: prev.claimed.filter(e => e.id !== item.id),
+                            completed: [...prev.completed, { ...item, status: "done" }]
+                          }));
+                        }}>
+                        ✅ Mark as Used
+                      </button>
+                    </div>
+                  ))}
+                </>
+              )}
+              {exchangeResults.active.length > 0 && (
+                <>
+                  <div style={{ fontSize: 11, color: "#8b949e", marginTop: exchangeResults.claimed.length > 0 ? 14 : 0, marginBottom: 6 }}>⏳ Active (waiting for match)</div>
+                  {exchangeResults.active.map((item, i) => (
+                    <div key={i} style={{ ...s.listingCard, marginTop: 6 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff" }}>{item.want_card}</span></div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Code: <span style={{ color: "#fff", letterSpacing: 2 }}>{item.code}</span></div>
+                    </div>
+                  ))}
+                </>
+              )}
+              {exchangeResults.completed.length > 0 && (
+                <>
+                  <div style={{ fontSize: 11, color: "#8b949e", marginTop: 14, marginBottom: 6 }}>🏁 Completed</div>
+                  {exchangeResults.completed.map((item, i) => (
+                    <div key={i} style={{ ...s.listingCard, marginTop: 6, opacity: 0.6 }}>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff" }}>{item.want_card}</span></div>
+                      <div style={{ fontSize: 11, color: "#3fb950", marginTop: 4 }}>✅ Trade Completed</div>
+                    </div>
+                  ))}
+                </>
+              )}
+              {exchangeResults.active.length === 0 && exchangeResults.claimed.length === 0 && exchangeResults.completed.length === 0 && (
+                <div style={{ fontSize: 12, color: "#8b949e", textAlign: "center", padding: "20px 0" }}>No exchange requests found</div>
+              )}
+            </div>
+          )}
+        </>
       )}
     </div>
   );
@@ -1375,6 +1490,7 @@ function AppContent() {
   const [checkUsername, setCheckUsername] = useState("");
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
+  const [exchangeResults, setExchangeResults] = useState(null); // ← YE ADD KARO
   // Live Deals state
 const [liveExchange, setLiveExchange] = useState([]);
 const [liveDonations, setLiveDonations] = useState([]);
@@ -1446,14 +1562,23 @@ useEffect(() => {
   };
 
   const handleExSubmit = async () => {
-    if (exCode.length < 7) return;
-    const { error } = await supabase.from("listings").insert([{
-      give_card: giveCards.join(" | "), want_card: wantCard,
-      code: exCode, status: "available", type: "exchange",
-    }]);
-    if (!error) { setMatchResult({ type: "code" }); setExDone(true); }
-    else alert("Error saving listing. Try again.");
-  };
+  if (exCode.length < 7) return;
+
+  let username = getSavedUsername();
+  if (!username) {
+    username = prompt("Enter your username to track this listing:");
+    if (!username || !username.trim()) return alert("Username required to post listing.");
+    saveUsername(username.trim());
+  }
+
+  const { error } = await supabase.from("listings").insert([{
+    give_card: giveCards.join(" | "), want_card: wantCard,
+    code: exCode, status: "available", type: "exchange",
+    requester_username: normalizeUsername(username),
+  }]);
+  if (!error) { setMatchResult({ type: "code" }); setExDone(true); }
+  else alert("Error saving listing. Try again.");
+};
   
 
   const handleExSubmitNoCode = async () => {
@@ -1574,23 +1699,36 @@ const { error } = await supabase.from("listings")
   };
 
   const handleCheckDonations = async () => {
-    if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
-    setCheckLoading(true);
-    const { data } = await supabase.from("listings").select("*")
-      .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
-    const grouped = Object.values(
-      (data || []).reduce((acc, item) => {
-        const key = item.give_card + "_" + (item.claim_code || "none");
-        if (!acc[key]) acc[key] = { ...item, quantity: 0 };
-        acc[key].quantity += 1;
-        return acc;
-      }, {})
-    );
-    saveUsername(checkUsername.trim());
-    subscribeToPush(checkUsername.trim()); // ← ADD
-    setCheckResults(grouped);
-    setCheckLoading(false);
-  };
+  if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
+  setCheckLoading(true);
+
+  // Donations fetch
+  const { data } = await supabase.from("listings").select("*")
+    .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
+  const grouped = Object.values(
+    (data || []).reduce((acc, item) => {
+      const key = item.give_card + "_" + (item.claim_code || "none");
+      if (!acc[key]) acc[key] = { ...item, quantity: 0 };
+      acc[key].quantity += 1;
+      return acc;
+    }, {})
+  );
+
+  // Exchange requests fetch — active, claimed, completed
+  const { data: exData } = await supabase.from("listings").select("*")
+    .eq("requester_username", normalizeUsername(checkUsername))
+    .eq("type", "exchange");
+
+  const activeEx = (exData || []).filter(e => e.status === "available" && !e.claim_code);
+  const claimedEx = (exData || []).filter(e => e.status === "available" && e.claim_code);
+  const completedEx = (exData || []).filter(e => e.status === "done");
+
+  saveUsername(checkUsername.trim());
+  subscribeToPush(checkUsername.trim());
+  setCheckResults(grouped);
+  setExchangeResults({ active: activeEx, claimed: claimedEx, completed: completedEx });
+  setCheckLoading(false);
+};
   const handleMarkUsed = async (id, onSuccess) => {
   const confirmed = window.confirm("Did you use this exchange code? This will remove the listing for everyone.");
   if (!confirmed) return;
@@ -1602,8 +1740,8 @@ useEffect(() => {
 }, [location.pathname]);
   const path = location.pathname;
   const getNavActive = (id) => {
-    if (id === "home") return path === "/" || path === "/check";
-    if (id === "trade") return path === "/exchange" || path === "/find" || path === "/donate" || path === "/check";
+    if (id === "home") return path === "/home" || path === "/check";
+if (id === "trade") return path === "/exchange" || path === "/find" || path === "/donate";
     if (id === "stock") return path === "/stock";
     return false;
   };
@@ -1638,6 +1776,12 @@ useEffect(() => {
   fetchDeals={fetchDeals}
   handleMarkUsed={handleMarkUsed}
   setLiveExchange={setLiveExchange}
+  exchangeResults={exchangeResults}
+  setExchangeResults={setExchangeResults}
+  handleFindCardSelect={handleFindCardSelect}
+  setFindMode={setFindMode}
+  setFindCategory={setFindCategory}
+  setFindStep={setFindStep}
             />
           } />
           <Route path="/check" element={<CheckDonationsPage />} />
@@ -1720,9 +1864,9 @@ useEffect(() => {
 
       <div style={s.bottomNav}>
         {[
-          { id: "home", icon: "🏠", label: "Home", path: "/home" },
-          { id: "trade", icon: "⇅", label: "Trade", path: "/exchange" },
-          { id: "stock", icon: "📦", label: "Stock", path: "/stock" },
+          { id: "home", icon: "⌂", label: "HOME", path: "/home" },
+          { id: "trade", icon: "⇅", label: "TRADE", path: "/exchange" },
+          { id: "stock", icon: "⛶", label: "STOCK", path: "/stock" },
         ].map(({ id, icon, label, path: navPath }) => (
           <button key={id} style={s.navItem(getNavActive(id))} onClick={() => { if (navPath === "/exchange") resetExchange(); navigate(navPath); }}>
             <span style={{ fontSize: 20 }}>{icon}</span>
