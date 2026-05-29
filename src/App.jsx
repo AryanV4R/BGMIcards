@@ -597,6 +597,7 @@ const ExchangeScreen = ({
   wantCard, setWantCard,
   wantSubStep, setWantSubStep,
   exCode, setExCode,
+  exUsername, setExUsername,
   exDone,
   matchResult,
   resetExchange, handleExSubmit, handleExSubmitNoCode,
@@ -779,7 +780,23 @@ const ExchangeScreen = ({
 <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8, marginBottom: 4 }}>
   Numbers only • Max 10 digits
 </div>
-<button style={s.btn(exCode.length < 7)} onClick={handleExSubmit}>
+{/* ← YEH BLOCK ADD KARO */}
+{!getSavedUsername() && (
+  <div style={{ marginTop: 14 }}>
+    <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 8 }}>
+      Enter your Reddit Username or a Custom Username — only once, ever. 
+   </div>
+    <input
+      style={{ ...s.input, fontSize: 13, padding: "10px 14px",letterSpacing: 2 }}
+      placeholder="Enter your Reddit / Custom username"
+      value={exUsername}
+      onChange={e => setExUsername(sanitizeUsername(e.target.value))}
+    />
+  </div>
+)}
+
+<button style={s.btn(exCode.length < 7 || (!getSavedUsername() && !isValidUsername(exUsername)))}
+  onClick={handleExSubmit}>
   Submit with Code
 </button>
 <button style={s.btnSecondary} onClick={handleExSubmitNoCode}>
@@ -863,7 +880,7 @@ const FindScreen = ({
           ))}
         </select>
       </div>
-      <input style={s.input} placeholder="Enter your Reddit Username / Custom Username here."
+      <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter your Reddit Username / Custom Username here."
   value={donorUsername}
   onChange={e => setDonorUsername(sanitizeUsername(e.target.value))}
   onKeyDown={e => { if (e.key === "Enter" && isValidUsername(donorUsername)) handleDonateList(); }} />
@@ -1294,7 +1311,7 @@ const CheckDonationsPage = () => {
         <div style={{ width: 74 }} />
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Monitor your extras and exchanges — all in one place.</div>
-      <input style={{ ...s.input, fontSize: 13, padding: "10px 14px" }} placeholder="Enter your Reddit Username / Custom Username to access My Dashboard."
+      <input style={{ ...s.input, fontSize: 13, padding: "10px 14px",letterSpacing: 2 }} placeholder="Enter your Reddit Username / Custom Username."
   value={checkUsername}
   onChange={e => setCheckUsername(sanitizeUsername(e.target.value))}
   onKeyDown={e => { if (e.key === "Enter" && checkUsername.trim()) handleCheckDonations(); }} />
@@ -1459,6 +1476,7 @@ function AppContent() {
   const [wantCard, setWantCard] = useState(null);
   const [wantSubStep, setWantSubStep] = useState(1);
   const [exCode, setExCode] = useState("");
+  const [exUsername, setExUsername] = useState(getSavedUsername);
   const [exDone, setExDone] = useState(false);
   const [matchResult, setMatchResult] = useState(null); // null | {type: "perfect"|"partial", matches: [], code: string}
 
@@ -1563,13 +1581,10 @@ useEffect(() => {
 
   const handleExSubmit = async () => {
   if (exCode.length < 7) return;
+  if (!isValidUsername(exUsername)) return; // username nahi hai toh step 4 dikhega
 
-  let username = getSavedUsername();
-  if (!username) {
-    username = prompt("Enter your username to track this listing:");
-    if (!username || !username.trim()) return alert("Username required to post listing.");
-    saveUsername(username.trim());
-  }
+  const username = exUsername.trim();
+  saveUsername(username);
 
   const { error } = await supabase.from("listings").insert([{
     give_card: giveCards.join(" | "), want_card: wantCard,
@@ -1796,6 +1811,7 @@ if (id === "trade") return path === "/exchange" || path === "/find" || path === 
               wantCard={wantCard} setWantCard={setWantCard}
               wantSubStep={wantSubStep} setWantSubStep={setWantSubStep}
               exCode={exCode} setExCode={setExCode}
+              exUsername={exUsername} setExUsername={setExUsername}
               exDone={exDone}
               matchResult={matchResult}
               handleExSubmitNoCode={handleExSubmitNoCode}
