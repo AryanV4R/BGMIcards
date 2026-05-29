@@ -1559,9 +1559,10 @@ setExDone(true);
   const handleClaimDonation = async () => {
     if (claimCode.length < 7) return;
     setClaimLoading(true);
-    const { error } = await supabase.from("listings")
-      .update({ claim_code: claimCode })
-      .eq("id", claimListingId);
+    const needy_username = normalizeUsername(getSavedUsername());
+const { error } = await supabase.from("listings")
+  .update({ claim_code: claimCode, claimed_by: needy_username })
+  .eq("id", claimListingId);
     setClaimLoading(false);
     if (!error) setClaimStep("done");
     else alert("Error. Try again.");

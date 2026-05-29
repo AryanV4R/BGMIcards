@@ -13,7 +13,6 @@ Deno.serve(async (req) => {
     const payload = await req.json();
     const record = payload.record;
 
-    // Sirf jab claim_code fill ho
     if (!record?.claim_code || !record?.donor_username) {
       return new Response('ok');
     }
@@ -24,26 +23,10 @@ Deno.serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data } = await supabase
-      .from('push_subscriptions')
-      .select('subscription')
-      .eq('donor_username', record.donor_username)
-      .single();
+    // ✅ Mark as Done — needy user ko notification bhejo
+    if (payload.old_record?.claim_code) {
+      const claimedBy = record?.claimed_by;
+      if (!claimedBy) return new Response('no claimed_by');
 
-    if (!data?.subscription) return new Response('no subscription');
-
-    await webpushModule.sendNotification(
-      data.subscription,
-      JSON.stringify({
-        title: '🎉 Card Claimed!',
-        body: `${record.give_card} claimed! Exchange code: ${record.claim_code}`,
-        url: '/check'
-      })
-    );
-
-    return new Response('sent');
-  } catch(e) {
-    console.error(e);
-    return new Response('error', { status: 500 });
-  }
-});
+      const { data: needyData } = await supabase
+        .from('push_subscriptions'
