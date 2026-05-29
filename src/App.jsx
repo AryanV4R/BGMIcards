@@ -1398,7 +1398,22 @@ setLiveDonations(don);
 }, []);
 
 useEffect(() => { fetchDeals(); }, [fetchDeals]);
-
+const subscribeToPush = async (username) => {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    const permission = await Notification.requestPermission();
+    if (permission !== 'granted') return;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: 'BEoc4VYpYMA6ciIYeoMUwN5EVB31zywth1J_IT_woKdfd5QqzQ3KQCWvBqLaW7VBFxscKnv-GbgLY3s0QYyk-XQ'
+    });
+    await supabase.from('push_subscriptions').upsert({
+      donor_username: normalizeUsername(username),
+      subscription: sub.toJSON(),
+    }, { onConflict: 'donor_username' });
+  } catch(e) { console.error('Push subscription failed:', e); }
+};
   const resetExchange = () => {
     setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
     setWantCategory(null); setWantCard(null); setWantSubStep(1);
@@ -1513,6 +1528,7 @@ setExDone(true);
       setDonateLoading(false);
       if (!error) {
   saveUsername(donorUsername.trim());
+  subscribeToPush(donorUsername.trim()); // ← ADD
   setDonateListedCount(donateQuantity);
   setDonateStep("done");
       } else {
@@ -1554,6 +1570,7 @@ setExDone(true);
       }, {})
     );
     saveUsername(checkUsername.trim());
+    subscribeToPush(checkUsername.trim()); // ← ADD
     setCheckResults(grouped);
     setCheckLoading(false);
   };
