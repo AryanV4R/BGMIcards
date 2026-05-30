@@ -11,7 +11,7 @@ function urlBase64ToUint8Array(base64String) {
 
 const SUPABASE_URL = "https://qdbzzbrusmjyqflotbfv.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkYnp6YnJ1c21qeXFmbG90YmZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2NTE3OTIsImV4cCI6MjA5NDIyNzc5Mn0.P7ycuWMpez18pB0amWVZfrRqDuFaqp8V3ZkO_V-3i4s";
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabase = globalThis.__supabaseClient ?? (globalThis.__supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
 const getSavedUsername = () => localStorage.getItem("bgmi_username") || "";
 const saveUsername = (u) => localStorage.setItem("bgmi_username", u);
 const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }) => (
@@ -191,7 +191,7 @@ const s = {
   bottomNav: { position: "fixed", bottom: 0, left: 0, width: "100%", background: "#161b22", borderTop: "1px solid #21262d", display: "flex", padding: "8px 0 12px" },
   navItem: (active) => ({ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, cursor: "pointer", padding: "6px 0", color: active ? "#ff4500" : "#8b949e", fontSize: 10, fontWeight: active ? 700 : 400, border: "none", background: "none" }),
   card: { background: "#161b22", border: "1px solid #21262d", borderRadius: 12, padding: "16px", marginBottom: 10, cursor: "pointer", transition: "border-color 0.15s, background 0.15s" },
-  cardHover: { background: "#1c2128", borderColor: "#58a6ff" },
+  cardHover: { background: "#1c2128", border: "1px solid #58a6ff" },
   pageHeader: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12, position: "relative" },
   subTabRow: { display: "flex", background: "#21262d", borderRadius: 10, padding: 3, marginBottom: 20 },
   subTab: (active) => ({ flex: 1, padding: "9px 0", textAlign: "center", borderRadius: 8, fontSize: 13, fontWeight: 600, cursor: "pointer", background: active ? "#ff4500" : "transparent", color: active ? "#fff" : "#8b949e", border: "none" }),
@@ -557,7 +557,7 @@ const GiveCardStep = ({
                 style={{
                   ...s.card,
                   ...(hovered === cardName && !isDisabled ? s.cardHover : {}),
-                  ...(isSelected ? { borderColor: "#3fb950", background: "#0f2318" } : {}),
+                  ...(isSelected ? { border: "1px solid #3fb950", background: "#0f2318" } : {}),
                   ...(isDisabled ? { opacity: 0.35, cursor: "not-allowed" } : {}),
                 }}
                 onMouseEnter={() => !isDisabled && setHovered(cardName)}
@@ -847,7 +847,7 @@ const FindScreen = ({
 
   
       {false && (
-      <div style={{ ...s.findModeCard, ...(hovered === "have" ? { borderColor: "#58a6ff", background: "#1c2128" } : {}) }}
+      <div style={{ ...s.findModeCard, ...(hovered === "have" ? { border: "1px solid #58a6ff", background: "#1c2128" } : {}) }}
         onMouseEnter={() => setHovered("have")} onMouseLeave={() => setHovered(null)}
         onClick={() => { setFindMode("have"); setFindStep(1); navigate("/donate"); }}>
         <div style={s.findModeIcon("rgba(88,166,255,0.15)")}>💎</div>
@@ -1176,7 +1176,7 @@ const StockScreen = () => {
         <div style={{ width: 74 }} />
       </div>
       {CATEGORIES.map(cat => (
-        <div key={cat} style={{ ...cs.card, ...(hovered === cat ? { background: "#1c2128", borderColor: "#ff4500" } : {}) }}
+        <div key={cat} style={{ ...cs.card, ...(hovered === cat ? { background: "#1c2128", border: "1px solid #ff4500" } : {}) }}
           onMouseEnter={() => setHovered(cat)} onMouseLeave={() => setHovered(null)}
           onClick={() => fetchStock(cat)}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
