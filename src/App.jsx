@@ -1622,7 +1622,10 @@ const subscribeToPush = async (username) => {
     await supabase.from('push_subscriptions').upsert({
       donor_username: normalizeUsername(username),
       subscription: sub.toJSON(),
-    }, { onConflict: 'donor_username' });
+    }, { 
+      onConflict: 'donor_username',
+      ignoreDuplicates: false
+    });
   } catch(e) { /* push not supported or blocked */ }
 };
 // ✅ useEffect BAAD mein aaye
