@@ -26,3 +26,7 @@ self.addEventListener('notificationclick', function(event) {
     clients.openWindow(event.notification.data.url)
   );
 });
+// sw.js mein end mein add karo
+self.addEventListener('fetch', function(event) {
+  // passthrough — bas SW ko active rakhne ke liye
+});

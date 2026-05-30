@@ -14,7 +14,10 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabase = globalThis.__supabaseClient ?? (globalThis.__supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY));
 const getSavedUsername = () => localStorage.getItem("bgmi_username") || "";
 const saveUsername = (u) => localStorage.setItem("bgmi_username", u);
+const isOnboarded = () => !!localStorage.getItem("bgmi_onboarded");
+const setOnboarded = () => localStorage.setItem("bgmi_onboarded", "true");
 const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }) => (
+
   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, }}>
     {onBack ? (
       <button style={{ background: "none", border: "none", color: "#fff", fontSize: 18, fontWeight: 800, cursor: "pointer", padding: "4px 0" }} onClick={onBack}>BACK</button>
@@ -182,6 +185,30 @@ const isValidUsername = (u) => {
   return /^[A-Za-z0-9_-]{3,20}$/.test(s);
 };
 const normalizeUsername = (u) => (u || "").trim().toLowerCase();
+
+const shakeStyle = document.createElement("style");
+shakeStyle.textContent = `
+  @keyframes badgeShake {
+    0%,100% { transform: translateX(0); }
+    15%     { transform: translateX(-4px) rotate(-2deg); }
+    30%     { transform: translateX(4px) rotate(2deg); }
+    45%     { transform: translateX(-3px) rotate(-1deg); }
+    60%     { transform: translateX(3px) rotate(1deg); }
+    75%     { transform: translateX(-2px); }
+  }
+  @keyframes nudgeFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes nudgeFadeOut {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+  }
+`;
+if (!document.head.querySelector("#badge-shake-style")) {
+  shakeStyle.id = "badge-shake-style";
+  document.head.appendChild(shakeStyle);
+}
 
 const s = {
   app: { background: "#0d1117", minHeight: "100dvh", color: "#e6e6e6", fontFamily: "'Sora', 'Segoe UI', sans-serif", display: "flex", flexDirection: "column"},
@@ -601,6 +628,7 @@ const ExchangeScreen = ({
   exDone,
   matchResult,
   resetExchange, handleExSubmit, handleExSubmitNoCode,
+  setShowDropdown,
 }) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
@@ -783,15 +811,15 @@ const ExchangeScreen = ({
 {/* ← YEH BLOCK ADD KARO */}
 {!getSavedUsername() && (
   <div style={{ marginTop: 14 }}>
-    <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 8 }}>
-      Enter your Reddit Username or a Custom Username — only once, ever. 
-   </div>
-    <input
-      style={{ ...s.input, fontSize: 13, padding: "10px 14px",letterSpacing: 2 }}
-      placeholder="Enter your Reddit / Custom username"
-      value={exUsername}
-      onChange={e => setExUsername(sanitizeUsername(e.target.value))}
-    />
+    <button
+      type="button"
+      onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setShowDropdown(true); }}
+      style={{ width: "100%", background: "rgba(255,69,0,0.08)",
+        border: "1px solid rgba(255,69,0,0.3)", borderRadius: 10,
+        color: "#ff4500", fontSize: 13, fontWeight: 600,
+        padding: "12px", cursor: "pointer", textAlign: "center" }}>
+      👤 Set username to continue →
+    </button>
   </div>
 )}
 
@@ -832,6 +860,7 @@ const FindScreen = ({
   handleClaimDonation,
   handleFindCardSelect,
   handleMarkDone,
+  setShowDropdown,
 }) => {
   const navigate = useNavigate();
   const [hovered, setHovered] = useState(null);
@@ -880,30 +909,23 @@ const FindScreen = ({
           ))}
         </select>
       </div>
-      <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter your Reddit Username / Custom Username here."
-  value={donorUsername}
-  onChange={e => setDonorUsername(sanitizeUsername(e.target.value))}
-  onKeyDown={e => { if (e.key === "Enter" && isValidUsername(donorUsername)) handleDonateList(); }} />
-{getSavedUsername() && getSavedUsername().toLowerCase().startsWith(donorUsername.toLowerCase()) && donorUsername.toLowerCase() !== getSavedUsername().toLowerCase() && (
-  <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: "0 0 10px 10px",
-    borderTop: "none", overflow: "hidden", marginTop: -2 }}>
-    <div onClick={() => setDonorUsername(getSavedUsername())}
-      style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-        padding: "10px 14px", cursor: "pointer" }}
-      onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
-      onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <span style={{ fontSize: 13, color: "#8b949e" }}>🕐</span>
-        <span style={{ fontSize: 13 }}>
-          <span style={{ color: "#e6e6e6" }}>{donorUsername}</span>
-          <span style={{ color: "#8b949e" }}>{getSavedUsername().slice(donorUsername.length)}</span>
-        </span>
-      </div>
-      <span style={{ fontSize: 11, color: "#58a6ff" }}>Use this →</span>
-    </div>
+      {!getSavedUsername() ? (
+  <>
+    <button
+      type="button"
+      onClick={() => { window.scrollTo({ top: 0, behavior: "smooth" }); setShowDropdown(true); }}
+      style={{ width: "100%", background: "rgba(255,69,0,0.08)",
+        border: "1px solid rgba(255,69,0,0.3)", borderRadius: 10,
+        color: "#ff4500", fontSize: 13, fontWeight: 600,
+        padding: "12px", cursor: "pointer", textAlign: "center", marginBottom: 8 }}>
+      👤 Set username to continue →
+    </button>
+  </>
+) : (
+  <div style={{ fontSize: 12, color: "#3fb950", marginTop: 4, marginBottom: 4 }}>
+    👤 Listing as <strong>{getSavedUsername()}</strong>
   </div>
 )}
-      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8 }}>NOTE : This will be your permanent login Username. Please save it somewhere.</div>
       <button type="button" style={s.btn(donateLoading || !isValidUsername(donorUsername))} onClick={() => handleDonateList()}>
         {donateLoading ? "Listing..." : `List ${donateQuantity} card${donateQuantity > 1 ? "s" : ""}`}
       </button>
@@ -1337,35 +1359,29 @@ const CheckDonationsPage = () => {
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 20 }}>Monitor your extras and exchanges — all in one place.</div>
       {checkResults === null && exchangeResults === null && !checkLoading && (
-        <>
-          <input style={{ ...s.input, fontSize: 13, padding: "10px 14px", letterSpacing: 2 }} placeholder="Enter your Reddit Username / Custom Username."
-            value={checkUsername}
-            onChange={e => setCheckUsername(sanitizeUsername(e.target.value))}
-            onKeyDown={e => { if (e.key === "Enter" && checkUsername.trim()) handleCheckDonations(); }} />
-          {getSavedUsername() && getSavedUsername().toLowerCase().startsWith(checkUsername.toLowerCase()) && checkUsername.toLowerCase() !== getSavedUsername().toLowerCase() && (
-            <div style={{ background: "#161b22", border: "1px solid #30363d", borderRadius: "0 0 10px 10px",
-              borderTop: "none", overflow: "hidden", marginTop: -2 }}>
-              <div onClick={() => setCheckUsername(getSavedUsername())}
-                style={{ display: "flex", alignItems: "center", justifyContent: "space-between",
-                  padding: "10px 14px", cursor: "pointer" }}
-                onMouseEnter={e => e.currentTarget.style.background = "#1c2128"}
-                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <span style={{ fontSize: 13, color: "#8b949e" }}>🕐</span>
-                  <span style={{ fontSize: 13, color: "#e6e6e6" }}>
-                    {checkUsername}{getSavedUsername().slice(checkUsername.length)}
-                  </span>
-                </div>
-                <span style={{ fontSize: 11, color: "#58a6ff" }}>Use this →</span>
-              </div>
-            </div>
-          )}
-          <button style={{ ...s.btn(checkLoading || !checkUsername.trim()), marginTop: 10, padding: "11px" }}
-            onClick={handleCheckDonations}>
-            {checkLoading ? "Logging in..." : "Login"}
-          </button>
-        </>
-      )}
+  <>
+    {getSavedUsername() ? (
+      // Username saved hai — seedha load karo (useEffect handles it)
+      <div style={{ textAlign: "center", color: "#8b949e", fontSize: 13, padding: "20px 0" }}>
+        Loading your dashboard...
+      </div>
+    ) : (
+      // Guest — badge dropdown open karo
+      <button
+        type="button"
+        onClick={() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+          window.dispatchEvent(new CustomEvent("open-badge-dropdown"));
+        }}
+        style={{ width: "100%", background: "rgba(255,69,0,0.08)",
+          border: "1px solid rgba(255,69,0,0.3)", borderRadius: 10,
+          color: "#ff4500", fontSize: 13, fontWeight: 600,
+          padding: "12px", cursor: "pointer", textAlign: "center" }}>
+        👤 Set username to continue →
+      </button>
+    )}
+  </>
+)}
 
       {checkLoading && checkResults === null && (
         <div style={{ textAlign: "center", color: "#8b949e", fontSize: 13, padding: "20px 0" }}>
@@ -1502,8 +1518,24 @@ function AppContent() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Exchange state
-  const [exStep, setExStep] = useState(1);
+ // Header badge / onboarding
+const [showDropdown, setShowDropdown] = useState(false);
+const [showSettings, setShowSettings] = useState(false);
+const notifSupported = typeof Notification !== "undefined" && 'PushManager' in window && 'serviceWorker' in navigator;
+const [settingsNotif, setSettingsNotif] = useState(() => {
+  if (!notifSupported || Notification.permission !== "granted") return false;
+  return localStorage.getItem("notif_enabled") !== "false"; // user ne explicitly off nahi kiya
+});
+const [notifBlocked, setNotifBlocked] = useState(notifSupported && Notification.permission === "denied");
+const [badgeInput, setBadgeInput] = useState("");
+//
+const [badgeLoading, setBadgeLoading] = useState(false);
+const [isShaking, setIsShaking] = useState(false);
+const [showNudge, setShowNudge] = useState(false);
+const [nudgeFading, setNudgeFading] = useState(false);
+
+// Exchange state
+const [exStep, setExStep] = useState(1);
   const [giveCards, setGiveCards] = useState([]);
   const [giveView, setGiveView] = useState("category");
   const [giveCategory, setGiveCategory] = useState(null);
@@ -1577,29 +1609,105 @@ useEffect(() => { fetchDeals(); }, [fetchDeals]);
 
 // ✅ subscribeToPush PEHLE define karo
 const subscribeToPush = async (username) => {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if (typeof Notification === "undefined") return;
   try {
-    const reg = await navigator.serviceWorker.register('/sw.js');
     const permission = await Notification.requestPermission();
     if (permission !== 'granted') return;
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    const reg = await navigator.serviceWorker.register('/sw.js');
     const sub = await reg.pushManager.subscribe({
       userVisibleOnly: true,
-      // ✅ Ye nai line hai
-applicationServerKey: urlBase64ToUint8Array('BInoCMhfYMLKVncvj34EKUkCzjG8N4b4MtEiM-lIai7iSSGQAWVBIXhFwa9UWraVF1r7qJ80Ri3HZq9I2ipLg2Q')
+      applicationServerKey: urlBase64ToUint8Array('BInoCMhfYMLKVncvj34EKUkCzjG8N4b4MtEiM-lIai7iSSGQAWVBIXhFwa9UWraVF1r7qJ80Ri3HZq9I2ipLg2Q')
     });
     await supabase.from('push_subscriptions').upsert({
       donor_username: normalizeUsername(username),
       subscription: sub.toJSON(),
     }, { onConflict: 'donor_username' });
-  } catch(e) { console.error('Push subscription failed:', e); }
+  } catch(e) { /* push not supported or blocked */ }
 };
-
 // ✅ useEffect BAAD mein aaye
 useEffect(() => {
   const username = getSavedUsername();
   if (username) subscribeToPush(username);
 }, []);
-  const resetExchange = () => {
+  // Shake + nudge sync animation — sirf jab logged in nahi
+useEffect(() => {
+  if (getSavedUsername()) return; // already logged in — kuch nahi
+
+  // 2 sec baad dono ek saath start
+  const startTimer = setTimeout(() => {
+    setIsShaking(true);
+    setShowNudge(true);
+
+    // Shake 3 sec baad band
+    const stopShake = setTimeout(() => setIsShaking(false), 3000);
+
+    // Nudge 5 sec baad fade out
+    const fadeNudge = setTimeout(() => setNudgeFading(true), 5000);
+    const hideNudge = setTimeout(() => { setShowNudge(false); setNudgeFading(false); }, 5800);
+
+    // Repeat cycle — 10 sec shaant phir shake
+    const repeatInterval = setInterval(() => {
+      if (getSavedUsername()) { clearInterval(repeatInterval); return; }
+      setIsShaking(true);
+      setTimeout(() => setIsShaking(false), 3000);
+    }, 13000); // 3sec shake + 10sec rest = 13sec cycle
+
+    return () => {
+      clearTimeout(stopShake);
+      clearTimeout(fadeNudge);
+      clearTimeout(hideNudge);
+      clearInterval(repeatInterval);
+    };
+  }, 2000);
+
+  return () => clearTimeout(startTimer);
+}, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+// Badge dropdown submit
+const handleBadgeSubmit = async () => {
+  if (!isValidUsername(badgeInput)) return;
+  setBadgeLoading(true);
+  saveUsername(badgeInput.trim());
+  setExUsername(badgeInput.trim());
+  setDonorUsername(badgeInput.trim());
+  if (settingsNotif) await subscribeToPush(badgeInput.trim());
+  setOnboarded();
+  setShowDropdown(false);
+  setBadgeLoading(false);
+  setIsShaking(false);
+  setShowNudge(false);
+};
+
+useEffect(() => {
+  if (!showDropdown && !showSettings) return;
+  const handler = (e) => {
+    if (!e.target.closest("[data-badge-dropdown]")) {
+      setShowDropdown(false);
+      setShowSettings(false);
+    }
+  };
+  document.addEventListener("pointerdown", handler);
+return () => document.removeEventListener("pointerdown", handler);
+}, [showDropdown, showSettings]);
+
+useEffect(() => {
+  const handler = () => setShowDropdown(true);
+  window.addEventListener("open-badge-dropdown", handler);
+  return () => window.removeEventListener("open-badge-dropdown", handler);
+}, []);
+  
+
+// Jab settings dropdown khule — fresh permission check karo
+useEffect(() => {
+  if (!showSettings && !showDropdown) return;
+  const supported = typeof Notification !== "undefined" && 'PushManager' in window && 'serviceWorker' in navigator;
+  setNotifBlocked(supported && Notification.permission === "denied");
+  // settingsNotif mat override karo — user preference localStorage mein hai
+  if (supported && Notification.permission === "denied") setSettingsNotif(false);
+}, [showSettings, showDropdown]);
+
+const resetExchange = () => {
     setExStep(1); setGiveCards([]); setGiveView("category"); setGiveCategory(null);
     setWantCategory(null); setWantCard(null); setWantSubStep(1);
     setExCode(""); setExDone(false);
@@ -1721,7 +1829,6 @@ setExDone(true);
       setDonateLoading(false);
       if (!error || !error.message) {
   saveUsername(usernameToUse.trim());
-  subscribeToPush(usernameToUse.trim());
   setDonateListedCount(donateQuantity);
   setDonateStep("done");
 } else {
@@ -1779,7 +1886,6 @@ const { error } = await supabase.from("listings")
   const completedEx = (exData || []).filter(e => e.status === "done");
 
   saveUsername(checkUsername.trim());
-  subscribeToPush(checkUsername.trim());
   setCheckResults(grouped);
   setExchangeResults({ active: activeEx, claimed: claimedEx, completed: completedEx });
   setCheckLoading(false);
@@ -1812,36 +1918,303 @@ if (id === "exchange") return path === "/exchange" || path === "/find" || path =
       <div style={{ fontSize: 11, color: "#8b949e", marginTop: 1 }}>r/BGMIcards • Card Exchange</div>
     </div>
   </div>
+  <div style={{ position: "relative" }} data-badge-dropdown>
+
+  {/* Nudge bubble */}
+  {showNudge && !getSavedUsername() && (
+    <div style={{
+      position: "absolute", top: 44, right: 0,
+      background: "#ff4500", color: "#fff",
+      fontSize: 11, fontWeight: 600,
+      padding: "6px 12px", borderRadius: 10,
+      whiteSpace: "nowrap", zIndex: 50,
+      animation: nudgeFading
+        ? "nudgeFadeOut 0.8s ease forwards"
+        : "nudgeFadeIn 0.4s ease forwards",
+      boxShadow: "0 4px 12px rgba(255,69,0,0.4)"
+    }}>
+      👆 Tap to set up
+      <div style={{ position: "absolute", top: -5, right: 14,
+        width: 0, height: 0,
+        borderLeft: "5px solid transparent",
+        borderRight: "5px solid transparent",
+        borderBottom: "5px solid #ff4500" }} />
+    </div>
+  )}
+
+  {/* Badge */}
   {getSavedUsername() ? (
-  <div style={{ display: "flex", alignItems: "center", gap: 8,
-    background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.25)",
-    borderRadius: 20, padding: "5px 12px 5px 8px" }}>
-    <div style={{ width: 26, height: 26, borderRadius: "50%",
-      background: "linear-gradient(135deg, #ff4500, #ff6534)",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 12, fontWeight: 800, color: "#fff" }}>
-      {getSavedUsername().charAt(0).toUpperCase()}
+  <>
+    {/* Logged-in badge — clickable */}
+    <div
+      onClick={() => setShowSettings(p => !p)}
+      style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+        background: "rgba(255,69,0,0.08)", border: "1px solid rgba(255,69,0,0.25)",
+        borderRadius: 20, padding: "5px 12px 5px 8px" }}>
+      <div style={{ width: 26, height: 26, borderRadius: "50%",
+        background: "linear-gradient(135deg, #ff4500, #ff6534)",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 12, fontWeight: 800, color: "#fff" }}>
+        {getSavedUsername().charAt(0).toUpperCase()}
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 600, color: "#ff4500", maxWidth: 80,
+        overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+        {getSavedUsername()}
+      </span>
+      <span style={{ fontSize: 10, color: "#ff4500", opacity: 0.6 }}>▾</span>
     </div>
-    <span style={{ fontSize: 12, fontWeight: 600, color: "#ff4500", maxWidth: 80,
-      overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-      {getSavedUsername()}
-    </span>
-  </div>
-) : (
-  <div style={{ display: "flex", alignItems: "center", gap: 8,
-    background: "rgba(139,148,158,0.08)", border: "1px solid rgba(139,148,158,0.2)",
-    borderRadius: 20, padding: "5px 12px 5px 8px" }}>
-    <div style={{ width: 26, height: 26, borderRadius: "50%",
-      background: "#21262d", border: "1px solid #30363d",
-      display: "flex", alignItems: "center", justifyContent: "center",
-      fontSize: 13 }}>
-      👤
+
+    {/* Settings dropdown */}
+    {showSettings && (
+      <div style={{ position: "absolute", top: 44, right: 0, zIndex: 100,
+        background: "#161b22", border: "1px solid #30363d", borderRadius: 14,
+        padding: "16px", width: 240,
+        boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+
+        {/* Arrow */}
+        <div style={{ position: "absolute", top: -6, right: 16,
+          width: 12, height: 12, background: "#161b22",
+          border: "1px solid #30363d", borderBottom: "none", borderRight: "none",
+          transform: "rotate(45deg)" }} />
+
+        {/* Username display */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14,
+          paddingBottom: 14, borderBottom: "1px solid #21262d" }}>
+          <div style={{ width: 32, height: 32, borderRadius: "50%",
+            background: "linear-gradient(135deg, #ff4500, #ff6534)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            fontSize: 14, fontWeight: 800, color: "#fff", flexShrink: 0 }}>
+            {getSavedUsername().charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>
+              {getSavedUsername()}
+            </div>
+            <div style={{ fontSize: 10, color: "#8b949e", marginTop: 1 }}>Logged in</div>
+          </div>
+        </div>
+
+        {/* Notification toggle */}
+        <div style={{ background: "#0d1117", border: "1px solid #21262d",
+          borderRadius: 10, padding: "10px 12px", marginBottom: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <div style={{ fontSize: 12, fontWeight: 600,
+                color: notifBlocked ? "#8b949e" : "#e6e6e6" }}>
+                {notifBlocked ? "🔕" : "🔔"} Notifications
+              </div>
+              <div style={{ fontSize: 10, color: "#8b949e", marginTop: 2 }}>
+                Notify on claim/match
+              </div>
+            </div>
+            <button
+  type="button"
+  data-badge-dropdown
+  disabled={false}
+onClick={async () => {
+  console.log("TOGGLE CLICKED", {
+    notifBlocked,
+    settingsNotif,
+    notifSupported,
+    permission: typeof Notification !== "undefined" ? Notification.permission : "N/A",
+    hasPushManager: 'PushManager' in window,
+    hasSW: 'serviceWorker' in navigator
+  });
+  if (notifBlocked) {
+  const isBrave = (navigator.brave && await navigator.brave.isBrave()) || false;
+  if (isBrave) {
+    alert("Brave Shields is blocking notifications.\n\nTo enable:\n1. Tap the Brave lion icon (🦁) in address bar\n2. Turn off Shields for this site\n3. Come back and try again");
+  } else {
+    alert("Notifications are blocked.\n\nTap the tune/lock icon in your browser address bar and allow notifications for this site.");
+  }
+  return;
+}
+  if (!settingsNotif) {
+  if (typeof Notification === "undefined" || !('PushManager' in window) || !('serviceWorker' in navigator)) {
+    alert("Push notifications aren't supported on this browser. Please use Chrome for the best experience.");
+    return;
+  }
+  try {
+    const permission = await Promise.race([
+      Notification.requestPermission(),
+      new Promise(resolve => setTimeout(() => resolve("timeout"), 4000))
+    ]);
+    if (permission === "granted") {
+      setSettingsNotif(true);
+      localStorage.setItem("notif_enabled", "true"); // preference save karo
+      setNotifBlocked(false);
+      await subscribeToPush(getSavedUsername());
+    } else if (permission === "denied") {
+      setNotifBlocked(true);
+      setSettingsNotif(false);
+    } else {
+      // "default" ya "timeout" — Brave mobile ya dismiss
+      setSettingsNotif(false);
+      alert("Could not enable notifications.\n\nThis browser may not support push notifications on mobile. Please use Chrome for the best experience.");
+    }
+  } catch (e) {
+    setSettingsNotif(false);
+    alert("Notifications not supported on this device/browser. Please use Chrome.");
+  }
+} else {
+    setSettingsNotif(false);
+    localStorage.setItem("notif_enabled", "false"); // user preference save karo
+  }
+}}
+  style={{ width: 44, height: 28, borderRadius: 14,
+    cursor: notifBlocked ? "not-allowed" : "pointer",
+    background: notifBlocked ? "#21262d" : settingsNotif ? "#ff4500" : "#21262d",
+    border: `1px solid ${notifBlocked ? "#30363d" : settingsNotif ? "#ff4500" : "#30363d"}`,
+    opacity: notifBlocked ? 0.4 : 1,
+    position: "relative", transition: "background 0.2s", flexShrink: 0,
+    padding: 0, outline: "none", WebkitTapHighlightColor: "transparent" }}>
+  <div style={{ position: "absolute", top: 3,
+    left: (!notifBlocked && settingsNotif) ? 20 : 3,
+    width: 20, height: 20, borderRadius: "50%",
+    background: "#fff", transition: "left 0.2s",
+    pointerEvents: "none" }} />
+</button>
+          </div>
+          {notifBlocked && (
+            <div style={{ fontSize: 10, color: "#f85149", marginTop: 8, lineHeight: 1.4 }}>
+              🔒 Blocked — click tune icon (🎛) in address bar to enable
+            </div>
+          )}
+        </div>
+
+        {/* Switch user */}
+        <button
+          onClick={() => {
+            localStorage.removeItem("bgmi_username");
+            localStorage.removeItem("bgmi_onboarded");
+            setSettingsNotif(false);
+            setShowSettings(false);
+            window.location.reload();
+          }}
+          style={{ width: "100%", background: "transparent",
+            border: "1px solid #30363d", borderRadius: 8,
+            color: "#8b949e", fontSize: 12, cursor: "pointer", padding: "8px",
+            textAlign: "center" }}>
+          🔄 Switch User
+        </button>
+      </div>
+    )}
+  </>
+  ) : (
+    <div
+      onClick={() => setShowDropdown(p => !p)}
+      style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer",
+        background: "rgba(139,148,158,0.08)", border: "1px solid rgba(139,148,158,0.2)",
+        borderRadius: 20, padding: "5px 12px 5px 8px",
+        animation: isShaking ? "badgeShake 0.6s ease infinite" : "none" }}>
+      <div style={{ width: 26, height: 26, borderRadius: "50%",
+        background: "#21262d", border: "1px solid #30363d",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        fontSize: 13 }}>
+        👤
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 500, color: "#8b949e" }}>
+        Guest
+      </span>
     </div>
-    <span style={{ fontSize: 12, fontWeight: 500, color: "#8b949e" }}>
-      Guest
-    </span>
-  </div>
-)}
+  )}
+
+  {/* Dropdown */}
+  {showDropdown && !getSavedUsername() && (
+    <div style={{ position: "absolute", top: 44, right: 0, zIndex: 100,
+      background: "#161b22", border: "1px solid #30363d", borderRadius: 14,
+      padding: "16px", width: 260,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+
+      {/* Arrow */}
+      <div style={{ position: "absolute", top: -6, right: 16,
+        width: 12, height: 12, background: "#161b22",
+        border: "1px solid #30363d", borderBottom: "none", borderRight: "none",
+        transform: "rotate(45deg)" }} />
+
+      <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
+        Set up your profile
+      </div>
+
+      {/* Username input */}
+      <input
+        style={{ ...s.input, fontSize: 13, padding: "10px 12px", marginBottom: 4 }}
+        placeholder="Reddit / Custom username"
+        value={badgeInput}
+        onChange={e => setBadgeInput(sanitizeUsername(e.target.value))}
+        onKeyDown={e => { if (e.key === "Enter") handleBadgeSubmit(); }}
+        autoFocus
+      />
+      {!isValidUsername(badgeInput) && badgeInput.length > 0 && (
+        <div style={{ fontSize: 11, color: "#f85149", marginBottom: 8 }}>
+          3–20 chars, letters/numbers/_ only
+        </div>
+      )}
+
+      {/* Notification toggle */}
+<div style={{ background: "#0d1117", border: "1px solid #21262d", borderRadius: 10,
+  padding: "10px 12px", marginBottom: 12, marginTop: 8 }}>
+  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div>
+      <div style={{ fontSize: 12, fontWeight: 600, color: notifBlocked ? "#8b949e" : "#e6e6e6" }}>
+        {notifBlocked ? "🔕" : "🔔"} Notifications
+      </div>
+      <div style={{ fontSize: 10, color: "#8b949e", marginTop: 2 }}>Notify on claim/match</div>
+    </div>
+    <button
+      type="button"
+      data-badge-dropdown
+      onClick={async () => {
+        if (notifBlocked) return;
+        if (!settingsNotif) {
+          const perm = await Notification.requestPermission();
+          if (perm === "granted") {
+            setSettingsNotif(true);
+            localStorage.setItem("notif_enabled", "true");  // ← ADD
+            setNotifBlocked(false);
+            const uname = getSavedUsername();
+            if (uname) await subscribeToPush(uname);
+          } else if (perm === "denied") {
+            setNotifBlocked(true);
+            setSettingsNotif(false);
+            localStorage.setItem("notif_enabled", "false");  // ← ADD
+          }
+        } else {
+          setSettingsNotif(false);
+          localStorage.setItem("notif_enabled", "false");  // ← ADD
+        }
+      }}
+      style={{ width: 38, height: 20, borderRadius: 10,
+        cursor: notifBlocked ? "not-allowed" : "pointer",
+        background: notifBlocked ? "#21262d" : settingsNotif ? "#ff4500" : "#21262d",
+        border: `1px solid ${notifBlocked ? "#30363d" : settingsNotif ? "#ff4500" : "#30363d"}`,
+        opacity: notifBlocked ? 0.4 : 1,
+        position: "relative", transition: "background 0.2s", flexShrink: 0,
+        padding: 0, outline: "none", WebkitTapHighlightColor: "transparent" }}>
+      <div style={{ position: "absolute", top: 2,
+        left: (!notifBlocked && settingsNotif) ? 19 : 2,
+        width: 14, height: 14, borderRadius: "50%",
+        background: "#fff", transition: "left 0.2s", pointerEvents: "none" }} />
+    </button>
+    </div>
+  {notifBlocked && (
+    <div style={{ fontSize: 10, color: "#f85149", marginTop: 8, lineHeight: 1.4 }}>
+      🔒 Blocked by browser — click the tune icon (🎛) in address bar to enable
+    </div>
+  )}
+</div>
+
+      {/* Submit */}
+      <button
+        style={{ ...s.btn(!isValidUsername(badgeInput) || badgeLoading), padding: "10px", fontSize: 13 }}
+        onClick={handleBadgeSubmit}
+        disabled={!isValidUsername(badgeInput) || badgeLoading}>
+        {badgeLoading ? "Saving..." : "Get Started →"}
+      </button>
+    </div>
+  )}
+
+</div>
 </div>
       <div style={s.content}>
         
@@ -1886,6 +2259,7 @@ if (id === "exchange") return path === "/exchange" || path === "/find" || path =
               handleExSubmitNoCode={handleExSubmitNoCode}
               resetExchange={resetExchange}
               handleExSubmit={handleExSubmit}
+              setShowDropdown={setShowDropdown}
             />
           } />
           <Route path="/find" element={
@@ -1912,6 +2286,7 @@ if (id === "exchange") return path === "/exchange" || path === "/find" || path =
               handleClaimDonation={handleClaimDonation}
               handleFindCardSelect={handleFindCardSelect}
               handleMarkDone={handleMarkDone}
+              setShowDropdown={setShowDropdown}
             />
           } />
           <Route path="/donate" element={
@@ -1938,6 +2313,7 @@ if (id === "exchange") return path === "/exchange" || path === "/find" || path =
               handleClaimDonation={handleClaimDonation}
               handleFindCardSelect={handleFindCardSelect}
               handleMarkDone={handleMarkDone}
+              setShowDropdown={setShowDropdown}
             />
           } />
           <Route path="/stock" element={<StockScreen />} />
