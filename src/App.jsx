@@ -2031,7 +2031,7 @@ onClick={async () => {
 }
   if (!settingsNotif) {
   if (typeof Notification === "undefined" || !('PushManager' in window) || !('serviceWorker' in navigator)) {
-    alert("Push notifications aren't supported on this browser. Please use Chrome for the best experience.");
+    alert("Push notifications aren't supported on this browser. Please use Chrome/Brave/Firefox for the best experience.");
     return;
   }
   try {
@@ -2050,11 +2050,11 @@ onClick={async () => {
     } else {
       // "default" ya "timeout" — Brave mobile ya dismiss
       setSettingsNotif(false);
-      alert("Could not enable notifications.\n\nThis browser may not support push notifications on mobile. Please use Chrome for the best experience.");
+      alert("Could not enable notifications.\n\nThis browser may not support push notifications on mobile. Please use Chrome/Brave/Firefox for the best experience.");
     }
   } catch (e) {
     setSettingsNotif(false);
-    alert("Notifications not supported on this device/browser. Please use Chrome.");
+    alert("Notifications not supported on this device/browser. Please use Chrome/Brave/Firefox for the best experience.");
   }
 } else {
     setSettingsNotif(false);
