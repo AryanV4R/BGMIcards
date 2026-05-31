@@ -232,8 +232,8 @@ const s = {
 
 const CardList = ({ items, onSelect, hovered, setHovered }) => (
   <>
-    {items.map((item) => {
-      const key = typeof item === "object" ? item.name : item;
+    {items.map((item, index) => {
+  const key = typeof item === "object" ? `${item.name}_${index}` : `${item}_${index}`;
       return (
         <div
           key={key}
@@ -941,8 +941,8 @@ const FindScreen = ({
       <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code to claim this card :</div>
       <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
         inputMode="numeric" autoComplete="off" autoFocus
-        value={claimCode} onChange={e => setClaimCode(e.target.value.replace(/\D/g, ""))} />
-      <button style={s.btn(claimCode.length < 7 || claimLoading)} onClick={handleClaimDonation}>
+        value={claimCode} onChange={e => setClaimCode(e.target.value.replace(/\D/g, "").slice(0, 8))} maxLength={8} />
+      <button style={s.btn(claimCode.length < 8 || claimLoading)} onClick={handleClaimDonation}>
         {claimLoading ? "Submitting..." : "Submit Code"}
       </button>
     </div>
@@ -1049,9 +1049,9 @@ const FindScreen = ({
   e.preventDefault();
   const card = findResult.cardToList || findCard;
   setDonateCard(card);
-  setDonorUsername(getSavedUsername()); // ← ADD
+  setDonorUsername(getSavedUsername()); 
   setDonateCard(card);
-setDonateStep("username"); // hamesha quantity screen dikhao
+setDonateStep("username"); 
 }}>
                 🎁 List as Extra Card
               </button>
@@ -1067,9 +1067,9 @@ setDonateStep("username"); // hamesha quantity screen dikhao
   e.preventDefault();
   const card = findResult.cardToList || findCard;
   setDonateCard(card);
-  setDonorUsername(getSavedUsername()); // ← ADD
+  setDonorUsername(getSavedUsername());
   setDonateCard(card);
-setDonateStep("username"); // hamesha quantity screen dikhao
+setDonateStep("username");
 }}>
               🎁 List as Extra Card
             </button>
@@ -1787,9 +1787,9 @@ setExDone(true);
     const cutoff = getCutoff();
     if (mode === "need") {
       const { data: exchangeData } = await supabase.from("listings").select("*")
-        .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "exchange").not("code", "is", null).gte("created_at", cutoff);
+        .eq("give_card", cardName).eq("status", "available").eq("type", "exchange").not("code", "is", null).gte("created_at", cutoff);
       const { data: donationData } = await supabase.from("listings").select("*")
-  .ilike("give_card", `%${cardName}%`).eq("status", "available").eq("type", "donation")
+  .eq("give_card", cardName).eq("status", "available").eq("type", "donation")
   .is("claim_code", null);
       setFindResult({
         available: (exchangeData && exchangeData.length > 0) || (donationData && donationData.length > 0),
@@ -1837,7 +1837,7 @@ setExDone(true);
   };
 
   const handleClaimDonation = async () => {
-    if (claimCode.length < 7) return;
+    if (claimCode.length < 8) return;
     setClaimLoading(true);
     const needy_username = normalizeUsername(getSavedUsername());
 const { error } = await supabase.from("listings")
