@@ -16,17 +16,7 @@ const getSavedUsername = () => localStorage.getItem("bgmi_username") || "";
 const saveUsername = (u) => localStorage.setItem("bgmi_username", u);
 const isOnboarded = () => !!localStorage.getItem("bgmi_onboarded");
 const setOnboarded = () => localStorage.setItem("bgmi_onboarded", "true");
-const NavButtons = ({ onBack, onNext, nextLabel = "NEXT", nextDisabled = false }) => (
 
-  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16, }}>
-    {onBack ? (
-      <button style={{ background: "none", border: "none", color: "#fff", fontSize: 18, fontWeight: 800, cursor: "pointer", padding: "4px 0" }} onClick={onBack}>BACK</button>
-    ) : <div />}
-    {onNext ? (
-      <button style={{ background: "none", border: "none", color: nextDisabled ? "#555" : "#fff", fontSize: 18, fontWeight: 800, cursor: nextDisabled ? "not-allowed" : "pointer", padding: "4px 0" }} onClick={onNext} disabled={nextDisabled}>{nextLabel}</button>
-    ) : <div />}
-  </div>
-);
 const CATEGORIES = [
   "Hero's Crown", "BLUE LOCK", "Gourmet Tour - Middle East", "Playful Battleground 2.0", "Evolving Universe", "Jujutsu Kaisen", "Special", "Playful Battleground",
 ];
@@ -279,12 +269,8 @@ const CardList = ({ items, onSelect, hovered, setHovered }) => (
 
 // ─── HomeScreen ───────────────────────────────────────────────────────────────
 const HomeScreen = ({
-  checkUsername, setCheckUsername,
-  checkLoading, checkResults,
-  handleCheckDonations, handleMarkDone,
-  liveExchange, liveDonations, dealsLoading, fetchDeals,  // ← ADD
+  liveExchange, liveDonations, dealsLoading, fetchDeals,
   handleMarkUsed, setLiveExchange,
-  exchangeResults, setExchangeResults,
   handleFindCardSelect, setFindMode, setFindCategory, setFindStep,
 }) => {
   const navigate = useNavigate();
@@ -411,7 +397,6 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
   ✓ Mark as Done
   </button>
 )}
-                {/* Rarity color strip at bottom */}
                 {/* Rarity color strip at bottom */}
 <div style={{ height: 4, background: strip, margin: "0 -10px", marginTop: "auto" }} />
               </div>
@@ -636,7 +621,6 @@ const ExchangeScreen = ({
   const lockedRarity = giveCards.length > 0 ? getRarityByName(giveCards[0]) : null;
 
     if (exDone) {
-  // Normal submit with code
   if (matchResult?.type === "code") return (
     <div style={{ textAlign: "center", paddingTop: 40 }}>
       <div style={{ fontSize: 48, marginBottom: 16 }}>✅</div>
@@ -664,7 +648,6 @@ const ExchangeScreen = ({
     </div>
   );
 
-  // Perfect match...
 
   // Perfect match
   if (matchResult?.type === "perfect") return (
@@ -725,7 +708,7 @@ const ExchangeScreen = ({
     <button style={s.btn(false)} onClick={resetExchange}>Try Again</button>
   </div>
 );
-  // Fallback — exDone true but matchResult not yet set
+  
   return null;
   }
 
@@ -1066,11 +1049,9 @@ const FindScreen = ({
   e.preventDefault();
   const card = findResult.cardToList || findCard;
   setDonateCard(card);
-  if (isValidUsername(getSavedUsername())) {
-    handleDonateList(card);
-  } else {
-    setDonateStep("username");
-  }
+  setDonorUsername(getSavedUsername()); // ← ADD
+  setDonateCard(card);
+setDonateStep("username"); // hamesha quantity screen dikhao
 }}>
                 🎁 List as Extra Card
               </button>
@@ -1086,11 +1067,9 @@ const FindScreen = ({
   e.preventDefault();
   const card = findResult.cardToList || findCard;
   setDonateCard(card);
-  if (isValidUsername(getSavedUsername())) {
-    handleDonateList(card);
-  } else {
-    setDonateStep("username");
-  }
+  setDonorUsername(getSavedUsername()); // ← ADD
+  setDonateCard(card);
+setDonateStep("username"); // hamesha quantity screen dikhao
 }}>
               🎁 List as Extra Card
             </button>
@@ -1257,7 +1236,13 @@ const CheckDonationsPage = () => {
   const [checkResults, setCheckResults] = useState(null);
   const [checkLoading, setCheckLoading] = useState(false);
   const [adjustLoading, setAdjustLoading] = useState(null); // card name jo adjust ho raha hai
-  const [exchangeResults, setExchangeResults] = useState(null); // ← YE ADD KARO
+  const [exchangeResults, setExchangeResults] = useState(null);
+  const handleMarkUsed = async (id, onSuccess) => {
+  const confirmed = window.confirm("Mark this exchange as done?");
+  if (!confirmed) return;
+  await supabase.from("listings").update({ status: "done" }).eq("id", id);
+  if (onSuccess) onSuccess(id);
+};
   const [activeTab, setActiveTab] = useState("donations");
   
   useEffect(() => {
@@ -1277,10 +1262,10 @@ const CheckDonationsPage = () => {
         const key = item.give_card;
         if (!acc[key]) acc[key] = { ...item, quantity: 0, ids: [] };
         acc[key].quantity += 1;
-        acc[key].ids.push(item.id); // saare ids store karo
+        acc[key].ids.push(item.id); 
         if (item.claim_code) {
       acc[key].claim_code = item.claim_code;
-      acc[key].id = item.id; // Mark as Done sahi row pe chale
+      acc[key].id = item.id; 
     }
         return acc;
       }, {})
@@ -1331,7 +1316,6 @@ const CheckDonationsPage = () => {
     setAdjustLoading(item.give_card);
     const idToRemove = item.ids[item.ids.length - 1]; // last id remove karo
     if (item.quantity === 1) {
-      // 0 pe aa gaya — saari rows mark as done
       await supabase.from("listings").update({ status: "done" })
         .eq("give_card", item.give_card)
         .eq("donor_username", normalizeUsername(checkUsername))
@@ -1482,12 +1466,30 @@ const CheckDonationsPage = () => {
                 <>
                   <div style={{ fontSize: 11, color: "#8b949e", marginTop: exchangeResults.claimed.length > 0 ? 14 : 0, marginBottom: 6 }}>⏳ Active (waiting for match)</div>
                   {exchangeResults.active.map((item, i) => (
-                    <div key={i} style={{ ...s.listingCard, marginTop: 6 }}>
-                      <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
-                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff" }}>{item.want_card}</span></div>
-                      <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Code: <span style={{ color: "#fff", letterSpacing: 2 }}>{item.code}</span></div>
-                    </div>
-                  ))}
+  <div key={i} style={{ ...s.listingCard, marginTop: 6 }}>
+    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+      <div>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{item.give_card}</div>
+        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Wants: <span style={{ color: "#58a6ff" }}>{item.want_card}</span></div>
+        <div style={{ fontSize: 11, color: "#8b949e", marginTop: 4 }}>Code: <span style={{ color: "#fff", letterSpacing: 2 }}>{item.code}</span></div>
+      </div>
+      <button
+        type="button"
+        onClick={() => handleMarkUsed(item.id, (id) => {
+  setExchangeResults(prev => prev ? {
+    ...prev,
+    active: prev.active.filter(x => x.id !== id),
+    completed: [...prev.completed, { ...item, status: "done" }]
+  } : prev);
+})}
+        style={{ background: "transparent", border: "1px solid #3fb950", color: "#3fb950",
+          borderRadius: 8, fontSize: 11, fontWeight: 600, cursor: "pointer",
+          padding: "4px 8px", whiteSpace: "nowrap", marginLeft: 8, flexShrink: 0 }}>
+        ✅ Mark Done
+      </button>
+    </div>
+  </div>
+))}
                 </>
               )}
               {exchangeResults.completed.length > 0 && (
@@ -1528,7 +1530,6 @@ const [settingsNotif, setSettingsNotif] = useState(() => {
 });
 const [notifBlocked, setNotifBlocked] = useState(notifSupported && Notification.permission === "denied");
 const [badgeInput, setBadgeInput] = useState("");
-//
 const [badgeLoading, setBadgeLoading] = useState(false);
 const [isShaking, setIsShaking] = useState(false);
 const [showNudge, setShowNudge] = useState(false);
@@ -1571,11 +1572,6 @@ const [exStep, setExStep] = useState(1);
   const [claimListingId, setClaimListingId] = useState(null);
   const [claimLoading, setClaimLoading] = useState(false);
 
-  // Home check donations state
-  const [checkUsername, setCheckUsername] = useState("");
-  const [checkResults, setCheckResults] = useState(null);
-  const [checkLoading, setCheckLoading] = useState(false);
-  const [exchangeResults, setExchangeResults] = useState(null); // ← YE ADD KARO
   // Live Deals state
 const [liveExchange, setLiveExchange] = useState([]);
 const [liveDonations, setLiveDonations] = useState([]);
@@ -1592,7 +1588,6 @@ const fetchDeals = useCallback(async () => {
   .is("claim_code", null).gte("created_at", cutoff)
   .order("created_at", { ascending: false }).limit(20);
 
-// Deduplicate by give_card — sirf pehli occurrence rakho
 const seen = new Set();
 const don = (donRaw || []).filter(item => {
   if (seen.has(item.give_card)) return false;
@@ -1607,7 +1602,7 @@ setLiveDonations(don);
 
 useEffect(() => { fetchDeals(); }, [fetchDeals]);
 
-// ✅ subscribeToPush PEHLE define karo
+
 const subscribeToPush = async (username) => {
   if (typeof Notification === "undefined") return;
   try {
@@ -1628,33 +1623,34 @@ const subscribeToPush = async (username) => {
     });
   } catch(e) { /* push not supported or blocked */ }
 };
-// ✅ useEffect BAAD mein aaye
 useEffect(() => {
   const username = getSavedUsername();
-  if (username) subscribeToPush(username);
+  if (username && typeof Notification !== "undefined" && Notification.permission === "granted") {
+    subscribeToPush(username); // sirf tab call karo jab permission already granted ho
+  }
 }, []);
-  // Shake + nudge sync animation — sirf jab logged in nahi
+  
 useEffect(() => {
-  if (getSavedUsername()) return; // already logged in — kuch nahi
+  if (getSavedUsername()) return; 
 
-  // 2 sec baad dono ek saath start
+  
   const startTimer = setTimeout(() => {
     setIsShaking(true);
     setShowNudge(true);
 
-    // Shake 3 sec baad band
+    
     const stopShake = setTimeout(() => setIsShaking(false), 3000);
 
-    // Nudge 5 sec baad fade out
+    
     const fadeNudge = setTimeout(() => setNudgeFading(true), 5000);
     const hideNudge = setTimeout(() => { setShowNudge(false); setNudgeFading(false); }, 5800);
 
-    // Repeat cycle — 10 sec shaant phir shake
+    
     const repeatInterval = setInterval(() => {
       if (getSavedUsername()) { clearInterval(repeatInterval); return; }
       setIsShaking(true);
       setTimeout(() => setIsShaking(false), 3000);
-    }, 13000); // 3sec shake + 10sec rest = 13sec cycle
+    }, 13000);
 
     return () => {
       clearTimeout(stopShake);
@@ -1701,12 +1697,12 @@ useEffect(() => {
 }, []);
   
 
-// Jab settings dropdown khule — fresh permission check karo
+
 useEffect(() => {
   if (!showSettings && !showDropdown) return;
   const supported = typeof Notification !== "undefined" && 'PushManager' in window && 'serviceWorker' in navigator;
   setNotifBlocked(supported && Notification.permission === "denied");
-  // settingsNotif mat override karo — user preference localStorage mein hai
+  
   if (supported && Notification.permission === "denied") setSettingsNotif(false);
 }, [showSettings, showDropdown]);
 
@@ -1727,7 +1723,7 @@ const resetExchange = () => {
 
   const handleExSubmit = async () => {
   if (exCode.length < 7) return;
-  if (!isValidUsername(exUsername)) return; // username nahi hai toh step 4 dikhega
+  if (!isValidUsername(exUsername)) return;
 
   const username = exUsername.trim();
   saveUsername(username);
@@ -1744,27 +1740,24 @@ const resetExchange = () => {
 
   const handleExSubmitNoCode = async () => {
   const cutoff = getCutoff();
-  
-  // Perfect mirror match check — Case 1
-  // give_card exact match with want_card of existing, and want_card match with give_card
+
   const { data: perfectMatches } = await supabase.from("listings")
     .select("*")
-    .eq("want_card", giveCards[0])       // unka want = mera give
-    .ilike("give_card", `%${wantCard}%`) // unka give = mera want
+    .eq("want_card", giveCards[0])       
+    .ilike("give_card", `%${wantCard}%`) 
     .eq("status", "available")
     .eq("type", "exchange")
-    .not("code", "is", null)             // code hona chahiye
+    .not("code", "is", null)             
     .gte("created_at", cutoff);
 
   if (perfectMatches && perfectMatches.length > 0) {
-    // Perfect match mila — code display karo, mark as done
+    
     setMatchResult({ type: "perfect", matches: perfectMatches });
     setExDone(true);
     return;
   }
 
-  // Partial match check — Case 2
-  // give_card ke kisi bhi card ka want_card match ho
+  
   const partialPromises = giveCards.map(card =>
     supabase.from("listings").select("*")
       .eq("want_card", card)
@@ -1783,8 +1776,7 @@ const resetExchange = () => {
     return;
   }
 
-  // Case 3 — no match, save as code-less listing
-  // Case 3 — no match, kuch save nahi karna
+  
 setMatchResult({ type: "none" });
 setExDone(true);
 };
@@ -1830,18 +1822,16 @@ setExDone(true);
       }));
       const { error } = await supabase.from("listings").insert(rows);
       setDonateLoading(false);
-      if (!error || !error.message) {
+      if (!error) {
   saveUsername(usernameToUse.trim());
   setDonateListedCount(donateQuantity);
   setDonateStep("done");
 } else {
   const msg = `code:${error?.code} | msg:${error?.message} | details:${error?.details} | hint:${error?.hint}`;
-  console.error("SUPABASE ERR:", msg);
   alert(msg);
 }
     } catch (err) {
   setDonateLoading(false);
-  console.error("CATCH ERROR:", err?.message, err?.stack);
   alert('Catch error: ' + err?.message);
 }
   };
@@ -1857,41 +1847,8 @@ const { error } = await supabase.from("listings")
     if (!error) setClaimStep("done");
     else alert("Error. Try again.");
   };
-
-  const handleMarkDone = async (id) => {
-    await supabase.from("listings").update({ status: "done" }).eq("id", id);
-    setCheckResults(prev => prev ? prev.map(item => item.id === id ? { ...item, status: "done" } : item) : prev);
-  };
-
-  const handleCheckDonations = async () => {
-  if (!isValidUsername(checkUsername)) return alert('Enter a valid username (3-20 chars: letters, numbers, _ or -)');
-  setCheckLoading(true);
-
-  // Donations fetch
-  const { data } = await supabase.from("listings").select("*")
-    .eq("donor_username", normalizeUsername(checkUsername)).eq("type", "donation").eq("status", "available");
-  const grouped = Object.values(
-    (data || []).reduce((acc, item) => {
-      const key = item.give_card + "_" + (item.claim_code || "none");
-      if (!acc[key]) acc[key] = { ...item, quantity: 0 };
-      acc[key].quantity += 1;
-      return acc;
-    }, {})
-  );
-
-  // Exchange requests fetch — active, claimed, completed
-  const { data: exData } = await supabase.from("listings").select("*")
-    .eq("requester_username", normalizeUsername(checkUsername))
-    .eq("type", "exchange");
-
-  const activeEx = (exData || []).filter(e => e.status === "available" && !e.claim_code);
-  const claimedEx = (exData || []).filter(e => e.status === "available" && e.claim_code);
-  const completedEx = (exData || []).filter(e => e.status === "done");
-
-  saveUsername(checkUsername.trim());
-  setCheckResults(grouped);
-  setExchangeResults({ active: activeEx, claimed: claimedEx, completed: completedEx });
-  setCheckLoading(false);
+const handleMarkDone = async (id) => {
+  await supabase.from("listings").update({ status: "done" }).eq("id", id);
 };
   const handleMarkUsed = async (id, onSuccess) => {
   const confirmed = window.confirm("Did you use this exchange code? This will remove the listing for everyone.");
@@ -2011,18 +1968,8 @@ if (id === "exchange") return path === "/exchange" || path === "/find" || path =
               </div>
             </div>
             <button
-  type="button"
-  data-badge-dropdown
-  disabled={false}
+
 onClick={async () => {
-  console.log("TOGGLE CLICKED", {
-    notifBlocked,
-    settingsNotif,
-    notifSupported,
-    permission: typeof Notification !== "undefined" ? Notification.permission : "N/A",
-    hasPushManager: 'PushManager' in window,
-    hasSW: 'serviceWorker' in navigator
-  });
   if (notifBlocked) {
   const isBrave = (navigator.brave && await navigator.brave.isBrave()) || false;
   if (isBrave) {
@@ -2044,14 +1991,14 @@ onClick={async () => {
     ]);
     if (permission === "granted") {
       setSettingsNotif(true);
-      localStorage.setItem("notif_enabled", "true"); // preference save karo
+      localStorage.setItem("notif_enabled", "true"); 
       setNotifBlocked(false);
       await subscribeToPush(getSavedUsername());
     } else if (permission === "denied") {
       setNotifBlocked(true);
       setSettingsNotif(false);
     } else {
-      // "default" ya "timeout" — Brave mobile ya dismiss
+      
       setSettingsNotif(false);
       alert("Could not enable notifications.\n\nThis browser may not support push notifications on mobile. Please use Chrome/Brave/Firefox for the best experience.");
     }
@@ -2061,7 +2008,7 @@ onClick={async () => {
   }
 } else {
     setSettingsNotif(false);
-    localStorage.setItem("notif_enabled", "false"); // user preference save karo
+    localStorage.setItem("notif_enabled", "false"); 
   }
 }}
   style={{ width: 44, height: 28, borderRadius: 14,
@@ -2090,6 +2037,7 @@ onClick={async () => {
           onClick={() => {
             localStorage.removeItem("bgmi_username");
             localStorage.removeItem("bgmi_onboarded");
+            localStorage.removeItem("notif_enabled");
             setSettingsNotif(false);
             setShowSettings(false);
             window.location.reload();
@@ -2098,7 +2046,7 @@ onClick={async () => {
             border: "1px solid #30363d", borderRadius: 8,
             color: "#8b949e", fontSize: 12, cursor: "pointer", padding: "8px",
             textAlign: "center" }}>
-          🔄 Switch User
+          ⍈ Log Out
         </button>
       </div>
     )}
@@ -2173,18 +2121,18 @@ onClick={async () => {
           const perm = await Notification.requestPermission();
           if (perm === "granted") {
             setSettingsNotif(true);
-            localStorage.setItem("notif_enabled", "true");  // ← ADD
+            localStorage.setItem("notif_enabled", "true");
             setNotifBlocked(false);
             const uname = getSavedUsername();
             if (uname) await subscribeToPush(uname);
           } else if (perm === "denied") {
             setNotifBlocked(true);
             setSettingsNotif(false);
-            localStorage.setItem("notif_enabled", "false");  // ← ADD
+            localStorage.setItem("notif_enabled", "false");
           }
         } else {
           setSettingsNotif(false);
-          localStorage.setItem("notif_enabled", "false");  // ← ADD
+          localStorage.setItem("notif_enabled", "false");
         }
       }}
       style={{ width: 38, height: 20, borderRadius: 10,
@@ -2224,25 +2172,17 @@ onClick={async () => {
         <Routes>
           <Route path="/home" element={
             <HomeScreen
-              checkUsername={checkUsername}
-  setCheckUsername={setCheckUsername}
-  checkLoading={checkLoading}
-  checkResults={checkResults}
-  handleCheckDonations={handleCheckDonations}
-  handleMarkDone={handleMarkDone}
   liveExchange={liveExchange}
   liveDonations={liveDonations}
   dealsLoading={dealsLoading}
   fetchDeals={fetchDeals}
   handleMarkUsed={handleMarkUsed}
   setLiveExchange={setLiveExchange}
-  exchangeResults={exchangeResults}
-  setExchangeResults={setExchangeResults}
   handleFindCardSelect={handleFindCardSelect}
   setFindMode={setFindMode}
   setFindCategory={setFindCategory}
   setFindStep={setFindStep}
-            />
+/>
           } />
           <Route path="/check" element={<CheckDonationsPage />} />
           
