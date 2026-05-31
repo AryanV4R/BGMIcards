@@ -1841,7 +1841,7 @@ setExDone(true);
     setClaimLoading(true);
     const needy_username = normalizeUsername(getSavedUsername());
 const { error } = await supabase.from("listings")
-  .update({ claim_code: claimCode, claimed_by: needy_username })
+  .update({ claim_code: claimCode, claimed_by: needy_username, claimed_at: new Date().toISOString() })
   .eq("id", claimListingId);
     setClaimLoading(false);
     if (!error) setClaimStep("done");
