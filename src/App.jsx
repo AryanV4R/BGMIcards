@@ -86,7 +86,7 @@ const CARDS = {
     { name: "Harley-Davidson", rarity: "Golden" },
     { name: "Coming Soon", rarity: "Blue" },
     { name: "TRIAL OF FIRE REALITY SHOW CARD", rarity: "Blue" },
-    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Velociraptor", rarity: "Blue" },
     { name: "Coming Soon", rarity: "Blue" },
     { name: "Roadster", rarity: "Grey" },
     { name: "Celebrate Together", rarity: "Grey" },
