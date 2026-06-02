@@ -80,7 +80,7 @@ const CARDS = {
     { name: "Rish Kharouf", rarity: "Grey" },
   ],
   "Playful Battleground 2.0": [
-    { name: "Coming Soon", rarity: "Golden" },
+    { name: "Brilliant Shot", rarity: "Golden" },
     { name: "Ford Mustang GTD", rarity: "Golden" },
     { name: "Ford F-150 Raptor", rarity: "Golden" },
     { name: "Harley-Davidson", rarity: "Golden" },
