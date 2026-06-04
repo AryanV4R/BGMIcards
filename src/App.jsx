@@ -856,7 +856,12 @@ const FindScreen = ({
       return acc;
     }, {})
   ) : [];
-
+  
+  const needy = normalizeUsername(getSavedUsername());
+  const myClaimedIds = (findResult?.donations || [])
+    .filter(d => d.claimed_by === needy)
+    .map(d => d.id);
+  const myClaimCount = myClaimedIds.length;
   
       {false && (
       <div style={{ ...s.findModeCard, ...(hovered === "have" ? { border: "1px solid #58a6ff", background: "#1c2128" } : {}) }}
@@ -1000,7 +1005,19 @@ const FindScreen = ({
   <button
     type="button"
     style={{ ...s.btnSecondary, flex: 1, padding: "9px", fontSize: 13, fontWeight: 400 }}
-    onClick={() => { setClaimListingId(g.ids[0]); setClaimStep("input"); }}>
+    onClick={() => {
+  const unclaimed = g.ids.find(id => !myClaimedIds.includes(id));
+  if (!unclaimed) {
+    alert("You already sent your code to this donor.");
+    return;
+  }
+  if (myClaimCount >= 2) {
+    alert("You've already sent code to 2 donors. Wait for one to respond.");
+    return;
+  }
+  setClaimListingId(unclaimed);
+  setClaimStep("input");
+}}>
     Enter your Exchange Code to claim this card 
   </button>
   <a
@@ -1415,13 +1432,27 @@ const CheckDonationsPage = () => {
                         <div style={{ fontSize: 18, fontWeight: 800, color: "#fff", letterSpacing: 3, marginTop: 4 }}>{item.claim_code}</div>
                         <div style={{ fontSize: 11, color: "#8b949e", marginTop: 6 }}>Enter this code in BGMI to complete the exchange</div>
                         {item.status !== "done" ? (
-                          <button type="button" style={{ width: "100%", padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer", marginTop: 10 }}
-                            onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
-                            ✅ Mark as Done
-                          </button>
-                        ) : (
-                          <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Exchange Completed</div>
-                        )}
+  <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+    <button type="button" style={{ flex: 1, padding: "8px", background: "transparent", color: "#3fb950", border: "1px solid #3fb950", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+      onClick={(e) => { e.preventDefault(); handleMarkDone(item.id); }}>
+      ✅ Mark as Done
+    </button>
+    <button type="button" style={{ flex: 1, padding: "8px", background: "transparent", color: "#8b949e", border: "1px solid #30363d", borderRadius: 10, fontSize: 12, fontWeight: 600, cursor: "pointer" }}
+      onClick={async (e) => {
+        e.preventDefault();
+        const confirmed = window.confirm("Mark as already completed? The card will remain in your listings.");
+        if (!confirmed) return;
+        await supabase.from("listings").update({ claim_code: null, claimed_by: null, claimed_at: null }).eq("id", item.id);
+        setCheckResults(prev => prev ? prev.map(r =>
+          r.id === item.id ? { ...r, claim_code: null, claimed_by: null } : r
+        ) : prev);
+      }}>
+      🔄 Already Completed
+    </button>
+  </div>
+) : (
+  <div style={{ fontSize: 11, color: "#3fb950", marginTop: 8, opacity: 0.6 }}>✅ Exchange Completed</div>
+)}
                       </>
                     ) : (
                       <div style={{ fontSize: 11, color: "#8b949e" }}>⏳ Nobody needs this card yet</div>
@@ -1790,8 +1821,7 @@ setExDone(true);
       const { data: exchangeData } = await supabase.from("listings").select("*")
         .eq("give_card", cardName).eq("status", "available").eq("type", "exchange").not("code", "is", null).gte("created_at", cutoff);
       const { data: donationData } = await supabase.from("listings").select("*")
-  .eq("give_card", cardName).eq("status", "available").eq("type", "donation")
-  .is("claim_code", null);
+  .eq("give_card", cardName).eq("status", "available").eq("type", "donation");
       setFindResult({
         available: (exchangeData && exchangeData.length > 0) || (donationData && donationData.length > 0),
         listings: exchangeData || [],
@@ -1841,6 +1871,20 @@ setExDone(true);
     if (claimCode.length < 8) return;
     setClaimLoading(true);
     const needy_username = normalizeUsername(getSavedUsername());
+
+// Check kitne active claims hain already
+const { data: existingClaims } = await supabase.from("listings")
+  .select("id")
+  .eq("claimed_by", needy_username)
+  .eq("give_card", findCard)
+  .eq("status", "available");
+
+if (existingClaims && existingClaims.length >= 2) {
+  setClaimLoading(false);
+  alert("You've already sent code to 2 donors. Wait for one to respond.");
+  return;
+}
+
 const { error } = await supabase.from("listings")
   .update({ claim_code: claimCode, claimed_by: needy_username, claimed_at: new Date().toISOString() })
   .eq("id", claimListingId);
