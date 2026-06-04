@@ -84,9 +84,9 @@ const CARDS = {
     { name: "Ford Mustang GTD", rarity: "Golden" },
     { name: "Ford F-150 Raptor", rarity: "Golden" },
     { name: "Harley-Davidson", rarity: "Golden" },
-    { name: "Coming Soon", rarity: "Blue" },
+    { name: "T. Rex", rarity: "Blue" },
     { name: "TRIAL OF FIRE REALITY SHOW CARD", rarity: "Blue" },
-    { name: "Velociraptor", rarity: "Blue" },
+    { name: "Velociraptor", rarity: "Grey" },
     { name: "Coming Soon", rarity: "Blue" },
     { name: "Roadster", rarity: "Grey" },
     { name: "Celebrate Together", rarity: "Grey" },
@@ -1853,7 +1853,11 @@ const handleMarkDone = async (id) => {
   const handleMarkUsed = async (id, onSuccess) => {
   const confirmed = window.confirm("Did you use this exchange code? This will remove the listing for everyone.");
   if (!confirmed) return;
-  await supabase.from("listings").update({ status: "done" }).eq("id", id);
+  // Before:
+await supabase.from("listings").update({ status: "done" }).eq("id", id);
+
+// After:
+await supabase.from("listings").update({ status: "done", claimed_at: new Date().toISOString() }).eq("id", id);
   if (onSuccess) onSuccess(id);
 };
 useEffect(() => {
