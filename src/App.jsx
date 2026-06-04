@@ -789,7 +789,7 @@ const ExchangeScreen = ({
   inputMode="numeric" autoComplete="off"
   value={exCode} onChange={e => setExCode(e.target.value.replace(/\D/g, ""))} />
 <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8, marginBottom: 4 }}>
-  Numbers only • Max 10 digits
+  Numbers only • Min 8 digits • Max 10 digits
 </div>
 {/* ← YEH BLOCK ADD KARO */}
 {!getSavedUsername() && (
@@ -806,7 +806,7 @@ const ExchangeScreen = ({
   </div>
 )}
 
-<button style={s.btn(exCode.length < 7 || (!getSavedUsername() && !isValidUsername(exUsername)))}
+<button style={s.btn(exCode.length < 8 || (!getSavedUsername() && !isValidUsername(exUsername)))}
   onClick={handleExSubmit}>
   Submit with Code
 </button>
@@ -1722,7 +1722,7 @@ const resetExchange = () => {
   };
 
   const handleExSubmit = async () => {
-  if (exCode.length < 7) return;
+  if (exCode.length < 8) return;
   if (!isValidUsername(exUsername)) return;
 
   const username = exUsername.trim();
