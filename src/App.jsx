@@ -1734,7 +1734,8 @@ const resetExchange = () => {
     requester_username: normalizeUsername(username),
   }]);
   if (!error) { setMatchResult({ type: "code" }); setExDone(true); }
-  else alert("Error saving listing. Try again.");
+  else if (error.code === '23505') alert("This exchange code is already used in another active listing. Please generate a new code in BGMI.");
+else alert("Error saving listing. Try again.");
 };
   
 
