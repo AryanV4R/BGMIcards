@@ -1703,19 +1703,7 @@ const handleBadgeSubmit = async () => {
   if (!isValidUsername(badgeInput)) return;
   setBadgeLoading(true);
 
-  // Reddit username verify karo
-  try {
-  const res = await supabase.functions.invoke("verify-reddit-user", {
-    body: { username: badgeInput.trim() }
-  });
-  if (res.data?.exists === false) {
-    alert("Username not found on Reddit. Please enter a valid Reddit username.");
-    setBadgeLoading(false);
-    return;
-  }
-} catch {
-  // skip verification on error
-}
+
 
   saveUsername(badgeInput.trim());
   setExUsername(badgeInput.trim());
