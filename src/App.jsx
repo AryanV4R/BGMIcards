@@ -168,7 +168,11 @@ const getCategoryByName = (cardName) => {
   }
   return null;
 };
-const sanitizeUsername = (raw) => (raw || "").replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20);
+const sanitizeUsername = (raw) => {
+  let s = (raw || "").trim();
+  if (s.startsWith("u/") || s.startsWith("U/")) s = s.slice(2);
+  return s.replace(/[^A-Za-z0-9_-]/g, "").slice(0, 20);
+};
 const isValidUsername = (u) => {
   if (!u) return false;
   const s = u.trim();
@@ -1698,6 +1702,21 @@ useEffect(() => {
 const handleBadgeSubmit = async () => {
   if (!isValidUsername(badgeInput)) return;
   setBadgeLoading(true);
+
+  // Reddit username verify karo
+  try {
+  const res = await supabase.functions.invoke("verify-reddit-user", {
+    body: { username: badgeInput.trim() }
+  });
+  if (res.data?.exists === false) {
+    alert("❌ Reddit username nahi mila. Sahi username daalo.");
+    setBadgeLoading(false);
+    return;
+  }
+} catch {
+  // skip verification on error
+}
+
   saveUsername(badgeInput.trim());
   setExUsername(badgeInput.trim());
   setDonorUsername(badgeInput.trim());
@@ -2133,21 +2152,27 @@ onClick={async () => {
         transform: "rotate(45deg)" }} />
 
       <div style={{ fontSize: 13, fontWeight: 700, color: "#fff", marginBottom: 12 }}>
-        Set up your profile
+        Enter your Reddit username
       </div>
 
       {/* Username input */}
-      <input
-        style={{ ...s.input, fontSize: 13, padding: "10px 12px", marginBottom: 4 }}
-        placeholder="Reddit / Custom username"
-        value={badgeInput}
-        onChange={e => setBadgeInput(sanitizeUsername(e.target.value))}
-        onKeyDown={e => { if (e.key === "Enter") handleBadgeSubmit(); }}
-        autoFocus
-      />
+      <div style={{ position: "relative", marginBottom: 4 }}>
+  <span style={{
+    position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)",
+    fontSize: 13, color: "#8b949e", pointerEvents: "none", userSelect: "none"
+  }}>u/</span>
+  <input
+    style={{ ...s.input, fontSize: 13, padding: "10px 12px 10px 30px", marginBottom: 0 }}
+    placeholder="AryanV4"
+    value={badgeInput}
+    onChange={e => setBadgeInput(sanitizeUsername(e.target.value))}
+    onKeyDown={e => { if (e.key === "Enter") handleBadgeSubmit(); }}
+    autoFocus
+  />
+</div>
       {!isValidUsername(badgeInput) && badgeInput.length > 0 && (
         <div style={{ fontSize: 11, color: "#f85149", marginBottom: 8 }}>
-          3–20 chars, letters/numbers/_ only
+          Enter your Reddit username (3–20 chars)
         </div>
       )}
 
@@ -2209,7 +2234,7 @@ onClick={async () => {
         style={{ ...s.btn(!isValidUsername(badgeInput) || badgeLoading), padding: "10px", fontSize: 13 }}
         onClick={handleBadgeSubmit}
         disabled={!isValidUsername(badgeInput) || badgeLoading}>
-        {badgeLoading ? "Saving..." : "Get Started →"}
+        {badgeLoading ? "Verifying..." : "Get Started →"}
       </button>
     </div>
   )}
