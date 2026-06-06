@@ -1709,7 +1709,7 @@ const handleBadgeSubmit = async () => {
     body: { username: badgeInput.trim() }
   });
   if (res.data?.exists === false) {
-    alert("❌ Reddit username nahi mila. Sahi username daalo.");
+    alert("Username not found on Reddit. Please enter a valid Reddit username.");
     setBadgeLoading(false);
     return;
   }
