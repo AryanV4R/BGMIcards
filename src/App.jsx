@@ -380,7 +380,7 @@ const rarityColor = { Colourful: "#ff4500", Golden: "#f0883e", Blue: "#58a6ff", 
     <div style={{ fontSize: 10, color: "#8b949e" }}>by {item.donor_username}</div>
   </div>
 )}
-{dealsTab === "exchange" && (
+{dealsTab === "exchange" && normalizeUsername(getSavedUsername()) === item.requester_username && (
   <button
     onClick={() => handleMarkUsed(item.id, (id) => {
       setLiveExchange(prev => prev.filter(l => l.id !== id));
@@ -789,11 +789,11 @@ const ExchangeScreen = ({
               <span style={{ fontSize: 13, fontWeight: 700, color: "#58a6ff" }}>{wantCard}</span>
             </div>
           </div>
-          <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
+          <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={8}
   inputMode="numeric" autoComplete="off"
   value={exCode} onChange={e => setExCode(e.target.value.replace(/\D/g, ""))} />
 <div style={{ fontSize: 11, color: "#8b949e", marginTop: 8, marginBottom: 4 }}>
-  Numbers only • Min 8 digits • Max 10 digits
+  Numbers only • 8 digits
 </div>
 {/* ← YEH BLOCK ADD KARO */}
 {!getSavedUsername() && (
@@ -948,7 +948,7 @@ const FindScreen = ({
       </div>
       <div style={{ fontSize: 12, color: "#8b949e", marginBottom: 16 }}>Card: <span style={{ color: "#58a6ff", fontWeight: 600 }}>{findCard}</span></div>
       <div style={{ fontSize: 13, color: "#e6e6e6", marginBottom: 12 }}>Enter your exchange code to claim this card :</div>
-      <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={10}
+      <input style={{ ...s.input, letterSpacing: 2 }} placeholder="Enter exchange code" maxLength={8}
         inputMode="numeric" autoComplete="off" autoFocus
         value={claimCode} onChange={e => setClaimCode(e.target.value.replace(/\D/g, "").slice(0, 8))} maxLength={8} />
       <button style={s.btn(claimCode.length < 8 || claimLoading)} onClick={handleClaimDonation}>
@@ -1903,13 +1903,19 @@ const handleMarkDone = async (id) => {
   await supabase.from("listings").update({ status: "done" }).eq("id", id);
 };
   const handleMarkUsed = async (id, onSuccess) => {
-  const confirmed = window.confirm("Did you use this exchange code? This will remove the listing for everyone.");
-  if (!confirmed) return;
-  // Before:
-await supabase.from("listings").update({ status: "done" }).eq("id", id);
+  const currentUser = normalizeUsername(getSavedUsername());
+  if (!currentUser) return alert("Please set your username first.");
 
-// After:
-await supabase.from("listings").update({ status: "done", claimed_at: new Date().toISOString() }).eq("id", id);
+  // Verify ownership before allowing mark as done
+  const { data: listing } = await supabase.from("listings").select("requester_username").eq("id", id).single();
+  if (!listing) return alert("Listing not found.");
+  if (listing.requester_username !== currentUser) {
+    return alert("Only the person who listed this exchange can mark it as done.");
+  }
+
+  const confirmed = window.confirm("Did you complete this exchange in-game? This will remove the listing for everyone.");
+  if (!confirmed) return;
+  await supabase.from("listings").update({ status: "done", claimed_at: new Date().toISOString() }).eq("id", id);
   if (onSuccess) onSuccess(id);
 };
 useEffect(() => {
@@ -2351,4 +2357,3 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
