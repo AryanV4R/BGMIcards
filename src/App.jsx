@@ -87,10 +87,10 @@ const CARDS = {
     { name: "T. Rex", rarity: "Blue" },
     { name: "TRIAL OF FIRE REALITY SHOW CARD", rarity: "Blue" },
     { name: "Velociraptor", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Blue" },
+    { name: "Pterosaur", rarity: "Blue" },
     { name: "Roadster", rarity: "Grey" },
     { name: "Celebrate Together", rarity: "Grey" },
-    { name: "Coming Soon", rarity: "Grey" },
+    { name: "V4.5 Mysterious Scroll", rarity: "Grey" },
   ],
   "Evolving Universe": [
     { name: "Evacuation Master", rarity: "Golden" },
